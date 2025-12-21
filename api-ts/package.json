@@ -32,6 +32,10 @@
     "./webrequests": {
       "types": "./api/webrequests/index.ts",
       "default": "./api/webrequests/index.ts"
+    },
+    "./result": {
+      "types": "./api/utils/result.ts",
+      "default": "./api/utils/result.ts"
     }
   },
   "bin": {
