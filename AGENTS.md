@@ -1,8 +1,35 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+## Build, Test & Lint Commands
 
-## Quick Reference
+```bash
+# Run tests
+cd api-ts && bun test                    # All tests
+cd api-ts && bun test <pattern>          # Specific test file(s)
+cd api-ts && bun test -t <pattern>       # Tests matching name pattern
+
+# Build & Type Check
+cd api-ts && bun run build               # Build types (tsc --emitDeclarationOnly)
+
+# Lint & Format
+cd api-ts && bunx biome check .          # Check formatting and lint
+cd api-ts && bunx biome check --write .  # Auto-fix issues
+```
+
+## Code Style
+
+- **Formatter**: Biome (100 char line width, 2 spaces, double quotes)
+- **Types**: Full TypeScript with explicit types, use `Result<T>` for error handling (see `api/utils/result.ts`)
+- **Imports**: Auto-organize via Biome, use relative paths for local files
+- **Naming**: camelCase for functions/variables, PascalCase for types/classes/interfaces
+- **Error Handling**: Return `Result<T>` (resultOk/resultErr), console.log errors with tags
+- **Async**: Mark functions `async` even if they return synchronous Results
+- **Database**: Use prepared statements, map DB rows via DTOs (see `adapters/dtos.ts`)
+- **No comments**: Code should be self-documenting
+
+## Issue Tracking
+
+This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
 ```bash
 bd ready              # Find available work
