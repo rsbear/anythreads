@@ -1,0 +1,13 @@
+{
+  "name": "api-ts-hono",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "hono": "^4.11.1",
+    "@anythreads/api": "link:@anythreads/api"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

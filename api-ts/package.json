@@ -1,0 +1,59 @@
+{
+  "name": "@anythreads/api",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./api/index.ts",
+      "default": "./api/index.ts"
+    },
+    "./threads": {
+      "types": "./api/types/threads.ts",
+      "default": "./api/types/threads.ts"
+    },
+    "./accounts": {
+      "types": "./api/types/accounts.ts",
+      "default": "./api/types/accounts.ts"
+    },
+    "./replies": {
+      "types": "./api/types/replies.ts",
+      "default": "./api/types/replies.ts"
+    },
+    "./votes": {
+      "types": "./api/types/votes.ts",
+      "default": "./api/types/votes.ts"
+    },
+    "./cli": {
+      "types": "./api/cli.ts",
+      "bin": "./cli/index.ts",
+      "default": "./api/cli.ts"
+    },
+    "./webrequests": {
+      "types": "./api/webrequests/index.ts",
+      "default": "./api/webrequests/index.ts"
+    }
+  },
+  "bin": {
+    "@anythreads/api": "./cli/index.ts"
+  },
+  "files": [
+    "api",
+    "cli"
+  ],
+  "scripts": {
+    "build": "bun build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.9",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "gunshi": "^0.27.3",
+    "nanoid": "^5.1.6"
+  }
+}
