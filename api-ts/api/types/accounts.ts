@@ -1,7 +1,7 @@
 export type {
   AccountCreateOrUpdate,
-  AccountUpdate,
   AccountsDataAdapter,
+  AccountUpdate,
 } from "../adapters/adapter-types";
 
 export type { Account } from "../schema";

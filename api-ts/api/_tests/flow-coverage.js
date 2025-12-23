@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 
 export function flowCoverage(setup) {
   // anythreads instance
@@ -14,57 +14,61 @@ export function flowCoverage(setup) {
         username: "user1",
       });
 
+      if (!accountOne.isOk) {
+        throw new Error("Failed to create account");
+      }
+
       const secondAccount = await anythreads.accounts.create({
         username: "user2",
       });
 
+      if (!secondAccount.isOk) {
+        throw new Error("Failed to create account");
+      }
+
       const thread = await anythreads.threads.create({
-        accountId: accountOne.data.id,
+        accountId: accountOne.value.id,
         title: "Thread",
         body: "Body",
       });
 
       const reply1 = await anythreads.replies.create({
-        threadId: thread.data.id,
-        accountId: secondAccount.data.id,
+        threadId: thread.value.id,
+        accountId: secondAccount.value.id,
         body: "Top level reply",
       });
 
-      await anythreads.votes.voteUp({
-        threadId: thread.data.id,
-        replyId: reply1.data.id,
-        accountId: accountOne.data.id,
-      });
+      await anythreads.votes.voteUpReply(accountOne.value.id, thread.value.id, reply1.value.id);
 
       const reply2 = await anythreads.replies.create({
-        threadId: thread.data.id,
-        accountId: accountOne.data.id,
+        threadId: thread.value.id,
+        accountId: accountOne.value.id,
         body: "Nested reply",
-        replyToId: reply1.data.id,
+        replyToId: reply1.value.id,
       });
 
-      await anythreads.votes.voteDown({
-        threadId: thread.data.id,
-        replyId: reply2.data.id,
-        accountId: secondAccount.data.id,
-      });
+      await anythreads.votes.voteDownReply(
+        secondAccount.value.id,
+        thread.value.id,
+        reply2.value.id,
+      );
 
-      const complete = await anythreads.threads.complete(thread.data.id);
+      const complete = await anythreads.threads.complete(thread.value.id);
 
       expect(complete.isOk).toBe(true);
-      expect(complete.data?.thread).toBeDefined();
-      expect(complete.data?.thread.id).toBe(thread.data.id);
-      expect(complete.data?.thread.account).toBeDefined();
-      expect(complete.data?.thread.account.username).toBe("user1");
-      expect(complete.data?.thread.voteCount).toBeDefined();
-      expect(complete.data?.thread.voteCount.upvotes).toBe(0);
-      expect(complete.data?.thread.voteCount.downvotes).toBe(0);
-      expect(complete.data?.thread.voteCount.total).toBe(0);
+      expect(complete.value?.thread).toBeDefined();
+      expect(complete.value?.thread.id).toBe(thread.value.id);
+      expect(complete.value?.thread.account).toBeDefined();
+      expect(complete.value?.thread.account.username).toBe("user1");
+      expect(complete.value?.thread.voteCount).toBeDefined();
+      expect(complete.value?.thread.voteCount.upvotes).toBe(0);
+      expect(complete.value?.thread.voteCount.downvotes).toBe(0);
+      expect(complete.value?.thread.voteCount.total).toBe(0);
 
-      expect(complete.data?.replies).toBeDefined();
-      expect(complete.data?.replies.length).toBeGreaterThan(0);
+      expect(complete.value?.replies).toBeDefined();
+      expect(complete.value?.replies.length).toBeGreaterThan(0);
 
-      const topReply = complete.data?.replies.find((r) => r.id === reply1.data.id);
+      const topReply = complete.value?.replies.find((r) => r.id === reply1.value.id);
       expect(topReply).toBeDefined();
       expect(topReply?.body).toBe("Top level reply");
       expect(topReply?.account).toBeDefined();
@@ -86,6 +90,79 @@ export function flowCoverage(setup) {
       expect(nestedReply?.voteCount.total).toBe(-1);
       expect(nestedReply?.replies).toBeDefined();
       expect(nestedReply?.replies.length).toBe(0);
+    });
+
+    test("should handle thread votes correctly", async () => {
+      const account = await anythreads.accounts.create({
+        username: "voter",
+      });
+
+      if (!account.isOk) {
+        throw new Error("Failed to create account");
+      }
+
+      const thread = await anythreads.threads.create({
+        accountId: account.value.id,
+        title: "Vote Test Thread",
+        body: "Testing thread votes",
+      });
+
+      const upvote = await anythreads.votes.voteUpThread(account.value.id, thread.value.id);
+
+      expect(upvote.isOk).toBe(true);
+      expect(upvote.value?.direction).toBe("up");
+      expect(upvote.value?.threadId).toBe(thread.value.id);
+      expect(upvote.value?.replyId).toBeNull();
+
+      const downvote = await anythreads.votes.voteDownThread(account.value.id, thread.value.id);
+
+      expect(downvote.isOk).toBe(true);
+      expect(downvote.value?.direction).toBe("down");
+      expect(downvote.value?.id).toBe(upvote.value?.id);
+
+      const complete = await anythreads.threads.complete(thread.value.id);
+      expect(complete.value?.thread.voteCount.upvotes).toBe(0);
+      expect(complete.value?.thread.voteCount.downvotes).toBe(1);
+      expect(complete.value?.thread.voteCount.total).toBe(-1);
+    });
+
+    test("should handle reply votes with threadId requirement", async () => {
+      const account = await anythreads.accounts.create({
+        username: "replier",
+      });
+
+      if (!account.isOk) {
+        throw new Error("Failed to create account");
+      }
+
+      const thread = await anythreads.threads.create({
+        accountId: account.value.id,
+        title: "Reply Vote Test",
+        body: "Testing reply votes",
+      });
+
+      const reply = await anythreads.replies.create({
+        threadId: thread.value.id,
+        accountId: account.value.id,
+        body: "A reply to vote on",
+      });
+
+      const upvote = await anythreads.votes.voteUpReply(
+        account.value.id,
+        thread.value.id,
+        reply.value.id,
+      );
+
+      expect(upvote.isOk).toBe(true);
+      expect(upvote.value?.direction).toBe("up");
+      expect(upvote.value?.threadId).toBe(thread.value.id);
+      expect(upvote.value?.replyId).toBe(reply.value.id);
+
+      const complete = await anythreads.threads.complete(thread.value.id);
+      const replyWithVote = complete.value?.replies.find((r) => r.id === reply.value.id);
+      expect(replyWithVote?.voteCount.upvotes).toBe(1);
+      expect(replyWithVote?.voteCount.downvotes).toBe(0);
+      expect(replyWithVote?.voteCount.total).toBe(1);
     });
   });
 }

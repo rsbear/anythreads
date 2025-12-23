@@ -1,14 +1,14 @@
 export type {
-  ThreadCreate,
-  ThreadUpdate,
   FindManyOptions,
+  ThreadCreate,
   ThreadsDataAdapter,
+  ThreadUpdate,
 } from "../adapters/adapter-types";
 
 export type {
-  Thread,
-  ThreadWithDetails,
-  ThreadComplete,
-  VoteCount,
   ReplyWithNested,
+  Thread,
+  ThreadComplete,
+  ThreadWithDetails,
+  VoteCount,
 } from "../schema";

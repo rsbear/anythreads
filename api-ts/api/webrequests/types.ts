@@ -11,7 +11,7 @@ export type Route = {
 };
 
 export type SuccessResponse<T> = {
-  data: T;
+  value: T;
 };
 
 export type ErrorResponse = {

@@ -4,7 +4,7 @@
   "module": "index.ts",
   "exports": {
     ".": "./index.ts",
-    "./csr": "./csr/index.ts",
+    "./csr": "./csr/index.tsx",
     "./rsc": "./rsc/index.ts"
   },
   "devDependencies": {

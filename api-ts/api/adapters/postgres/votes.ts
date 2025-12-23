@@ -1,50 +1,52 @@
 import type { Vote } from "../../schema.ts";
 import { createId } from "../../utils/create-id.ts";
 import { type Result, resultErr, resultOk } from "../../utils/result.ts";
-import type {
-  FindManyOptions,
-  VoteInput,
-  VotesDataAdapter,
-  VotesFindManyOptions,
-} from "../adapter-types.ts";
+import type { FindManyOptions, VotesDataAdapter, VotesFindManyOptions } from "../adapter-types.ts";
 import { mapDbToVote } from "../dtos.ts";
 
 export class PostgresVotesAdapter implements VotesDataAdapter {
   constructor(private db: any) {}
 
-  public async voteUp(vote: VoteInput): Promise<Result<Vote>> {
-    return this.createOrUpdateVote(vote, "up");
+  public async voteUpThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, null, "up");
   }
 
-  public async voteDown(vote: VoteInput): Promise<Result<Vote>> {
-    return this.createOrUpdateVote(vote, "down");
+  public async voteDownThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, null, "down");
+  }
+
+  public async voteUpReply(
+    accountId: string,
+    threadId: string,
+    replyId: string,
+  ): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, replyId, "up");
+  }
+
+  public async voteDownReply(
+    accountId: string,
+    threadId: string,
+    replyId: string,
+  ): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, replyId, "down");
   }
 
   private async createOrUpdateVote(
-    vote: VoteInput,
+    accountId: string,
+    threadId: string,
+    replyId: string | null,
     direction: "up" | "down",
   ): Promise<Result<Vote>> {
     try {
-      if (!vote.threadId && !vote.replyId) {
-        return resultErr("VOTE_CREATE", "Either threadId or replyId must be provided");
-      }
+      const whereClauses = ["account_id = $1", "thread_id = $2"];
+      const whereValues: any[] = [accountId, threadId];
+      let paramCount = 3;
 
-      if (vote.threadId && vote.replyId) {
-        return resultErr("VOTE_CREATE", "Only one of threadId or replyId can be provided");
-      }
-
-      const whereClauses = ["account_id = $1"];
-      const whereValues: any[] = [vote.accountId];
-      let paramCount = 2;
-
-      if (vote.threadId) {
-        whereClauses.push(`thread_id = $${paramCount++}`);
-        whereValues.push(vote.threadId);
-        whereClauses.push("reply_id IS NULL");
-      } else {
+      if (replyId) {
         whereClauses.push(`reply_id = $${paramCount++}`);
-        whereValues.push(vote.replyId);
-        whereClauses.push("thread_id IS NULL");
+        whereValues.push(replyId);
+      } else {
+        whereClauses.push("reply_id IS NULL");
       }
 
       const existingVoteResult = await this.db.query(
@@ -77,7 +79,7 @@ export class PostgresVotesAdapter implements VotesDataAdapter {
           VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING *
         `,
-          [id, vote.threadId || null, vote.accountId, vote.replyId || null, direction, now, now],
+          [id, threadId, accountId, replyId, direction, now, now],
         );
 
         return resultOk(mapDbToVote(result.rows[0]));

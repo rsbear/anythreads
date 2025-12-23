@@ -51,11 +51,11 @@ export type Vote = {
 
 // ----- Thread as full tree with replies, accounts, votes
 
-export interface VoteCount {
+export type VoteCount = {
   upvotes: number;
   downvotes: number;
   total: number;
-}
+};
 
 export interface ReplyWithNested extends Reply {
   account: Account;

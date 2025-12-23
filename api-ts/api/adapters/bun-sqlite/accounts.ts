@@ -1,5 +1,7 @@
 import type { Database } from "bun:sqlite";
 import type { Account } from "../../schema.ts";
+import { createId } from "../../utils/create-id.ts";
+import { type Result, resultErr, resultOk } from "../../utils/result.ts";
 import type {
   AccountCreateOrUpdate,
   AccountsDataAdapter,
@@ -7,8 +9,6 @@ import type {
   FindManyOptions,
 } from "../adapter-types.ts";
 import { mapDbToAccount } from "../dtos.ts";
-import { resultErr, resultOk, type Result } from "../../utils/result.ts";
-import { createId } from "../../utils/create-id.ts";
 
 export class BunSQLiteAccountsAdapter implements AccountsDataAdapter {
   constructor(private db: Database) {}

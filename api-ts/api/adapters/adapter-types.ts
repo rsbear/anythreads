@@ -46,8 +46,10 @@ export interface RepliesDataAdapter {
 }
 
 export interface VotesDataAdapter {
-  voteUp(vote: VoteInput): Promise<Result<Vote>>;
-  voteDown(vote: VoteInput): Promise<Result<Vote>>;
+  voteUpThread(accountId: string, threadId: string): Promise<Result<Vote>>;
+  voteDownThread(accountId: string, threadId: string): Promise<Result<Vote>>;
+  voteUpReply(accountId: string, threadId: string, replyId: string): Promise<Result<Vote>>;
+  voteDownReply(accountId: string, threadId: string, replyId: string): Promise<Result<Vote>>;
   delete(id: string): Promise<Result<"ok">>;
   findOne(id: string): Promise<Result<Vote>>;
   findMany(opts?: VotesFindManyOptions): Promise<Result<Vote[]>>;
@@ -151,8 +153,13 @@ export type ReplyUpdate = {
 
 // ---- Votes
 
-export type VoteInput = {
+export type VoteThreadInput = {
   accountId: string;
-  threadId?: string;
-  replyId?: string;
+  threadId: string;
+};
+
+export type VoteReplyInput = {
+  accountId: string;
+  threadId: string;
+  replyId: string;
 };

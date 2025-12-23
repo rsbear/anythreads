@@ -31,8 +31,10 @@ const routes: Route[] = [
 
   { method: "GET", pattern: "/votes", handler: votes.listVotes },
   { method: "GET", pattern: "/votes/:id", handler: votes.getVote },
-  { method: "POST", pattern: "/votes/up", handler: votes.voteUp },
-  { method: "POST", pattern: "/votes/down", handler: votes.voteDown },
+  { method: "POST", pattern: "/votes/thread/up", handler: votes.voteUpThread },
+  { method: "POST", pattern: "/votes/thread/down", handler: votes.voteDownThread },
+  { method: "POST", pattern: "/votes/reply/up", handler: votes.voteUpReply },
+  { method: "POST", pattern: "/votes/reply/down", handler: votes.voteDownReply },
   { method: "DELETE", pattern: "/votes/:id", handler: votes.deleteVote },
 ];
 

@@ -957,7 +957,7 @@ export function fullCoverageTest(setup: AnythreadsCLI) {
   });
 
   describe("votes", () => {
-    describe("voteUp", () => {
+    describe("voteUpThread", () => {
       test("should create upvote on thread", async () => {
         const account = await anythreads.accounts.create({ username: "voter" });
         const thread = await anythreads.threads.create({
@@ -966,10 +966,7 @@ export function fullCoverageTest(setup: AnythreadsCLI) {
           body: "Body",
         });
 
-        const vote = await anythreads.votes.voteUp({
-          threadId: thread.data!.id,
-          accountId: account.data!.id,
-        });
+        const vote = await anythreads.votes.voteUpThread(account.data!.id, thread.data!.id);
 
         expect(vote.isOk).toBe(true);
         expect(vote.data?.direction).toBe("up");
@@ -978,6 +975,24 @@ export function fullCoverageTest(setup: AnythreadsCLI) {
         expect(vote.data?.replyId).toBeNull();
       });
 
+      test("should update existing downvote to upvote", async () => {
+        const account = await anythreads.accounts.create({ username: "voter" });
+        const thread = await anythreads.threads.create({
+          accountId: account.data!.id,
+          title: "Thread",
+          body: "Body",
+        });
+
+        await anythreads.votes.voteDownThread(account.data!.id, thread.data!.id);
+
+        const vote = await anythreads.votes.voteUpThread(account.data!.id, thread.data!.id);
+
+        expect(vote.isOk).toBe(true);
+        expect(vote.data?.direction).toBe("up");
+      });
+    });
+
+    describe("voteUpReply", () => {
       test("should create upvote on reply", async () => {
         const account = await anythreads.accounts.create({ username: "voter" });
         const thread = await anythreads.threads.create({
@@ -991,71 +1006,16 @@ export function fullCoverageTest(setup: AnythreadsCLI) {
           body: "Reply",
         });
 
-        const vote = await anythreads.votes.voteUp({
-          replyId: reply.data!.id,
-          accountId: account.data!.id,
-        });
+        const vote = await anythreads.votes.voteUpReply(
+          account.data!.id,
+          thread.data!.id,
+          reply.data!.id,
+        );
 
         expect(vote.isOk).toBe(true);
         expect(vote.data?.direction).toBe("up");
         expect(vote.data?.replyId).toBe(reply.data!.id);
-        expect(vote.data?.threadId).toBeNull();
-      });
-
-      test("should update existing downvote to upvote", async () => {
-        const account = await anythreads.accounts.create({ username: "voter" });
-        const thread = await anythreads.threads.create({
-          accountId: account.data!.id,
-          title: "Thread",
-          body: "Body",
-        });
-
-        await anythreads.votes.voteDown({
-          threadId: thread.data!.id,
-          accountId: account.data!.id,
-        });
-
-        const vote = await anythreads.votes.voteUp({
-          threadId: thread.data!.id,
-          accountId: account.data!.id,
-        });
-
-        expect(vote.isOk).toBe(true);
-        expect(vote.data?.direction).toBe("up");
-      });
-
-      test("should return error when neither threadId nor replyId provided", async () => {
-        const account = await anythreads.accounts.create({ username: "voter" });
-
-        const result = await anythreads.votes.voteUp({
-          accountId: account.data!.id,
-        });
-
-        expect(result.isOk).toBe(false);
-        expect(result.err?.msg).toBe("Either threadId or replyId must be provided");
-      });
-
-      test("should return error when both threadId and replyId provided", async () => {
-        const account = await anythreads.accounts.create({ username: "voter" });
-        const thread = await anythreads.threads.create({
-          accountId: account.data!.id,
-          title: "Thread",
-          body: "Body",
-        });
-        const reply = await anythreads.replies.create({
-          threadId: thread.data!.id,
-          accountId: account.data!.id,
-          body: "Reply",
-        });
-
-        const result = await anythreads.votes.voteUp({
-          threadId: thread.data!.id,
-          replyId: reply.data!.id,
-          accountId: account.data!.id,
-        });
-
-        expect(result.isOk).toBe(false);
-        expect(result.err?.msg).toBe("Only one of threadId or replyId can be provided");
+        expect(vote.data?.threadId).toBe(thread.data!.id);
       });
     });
 

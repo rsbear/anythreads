@@ -55,7 +55,7 @@ export async function fetchRequest<T>(
       );
     }
 
-    return resultOk(responseData.data as T);
+    return resultOk(responseData.value as T);
   } catch (err) {
     return resultErr(
       "NETWORK_ERROR",

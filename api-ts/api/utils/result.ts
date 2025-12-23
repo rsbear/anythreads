@@ -37,14 +37,14 @@ type ErrTags =
 interface ResultOk<T> {
   isOk: true;
   isErr: false;
-  data: T;
+  value: T;
   err: undefined;
 }
 
 interface ResultErr {
   isOk: false;
   isErr: true;
-  data: undefined;
+  value: undefined;
   err: {
     tag: ErrTags;
     msg: string;
@@ -54,11 +54,11 @@ interface ResultErr {
 
 export type Result<T> = ResultOk<T> | ResultErr;
 
-export function resultOk<T>(data: T): ResultOk<T> {
+export function resultOk<T>(value: T): ResultOk<T> {
   return {
     isOk: true,
     isErr: false,
-    data,
+    value,
     err: undefined,
   };
 }
@@ -67,7 +67,7 @@ export function resultErr(tag: ErrTags, msg: string, metadata?: Record<string, a
   return {
     isOk: false,
     isErr: true,
-    data: undefined,
+    value: undefined,
     err: {
       tag,
       msg,

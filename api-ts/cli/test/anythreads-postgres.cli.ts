@@ -12,7 +12,7 @@ const db = {
   query: async (sql: string) => {
     console.log(`[Postgres Mock] Executing: ${sql.substring(0, 100)}...`);
     return { rows: [] };
-  }
+  },
 };
 
 export default setupAnythreads({ postgres: db });

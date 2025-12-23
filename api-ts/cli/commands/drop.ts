@@ -1,12 +1,16 @@
 import type { Command } from "../core/executor.ts";
 
 const TABLES = ["accounts", "threads", "replies", "votes"] as const;
-type TableName = typeof TABLES[number];
+type TableName = (typeof TABLES)[number];
 
-async function dropTable(db: any, dbType: "bun_sqlite" | "postgres", table: TableName): Promise<void> {
+async function dropTable(
+  db: any,
+  dbType: "bun_sqlite" | "postgres",
+  table: TableName,
+): Promise<void> {
   console.log(`Dropping ${table} table...`);
   const sql = `DROP TABLE IF EXISTS ${table}`;
-  
+
   if (dbType === "bun_sqlite") {
     db.run(sql);
   } else {
@@ -19,11 +23,11 @@ export const dropCommand: Command = {
   description: "Drop a table",
   handler: async (config, args) => {
     const target = args[0];
-    
+
     if (!target) {
       throw new Error("Usage: drop <accounts|threads|replies|votes|all>");
     }
-    
+
     if (target === "all") {
       for (const table of [...TABLES].reverse()) {
         await dropTable(config.db, config.dbType, table);

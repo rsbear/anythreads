@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 
 import { cli, define } from "gunshi";
+import { dropCommand } from "./commands/drop.ts";
+import { emptyCommand } from "./commands/empty.ts";
+import { seedCommand } from "./commands/seed.ts";
+import { setupCommand } from "./commands/setup.ts";
 import { discoverConfig } from "./core/discovery.ts";
 import { loadConfig } from "./core/loader.ts";
-import { setupCommand } from "./commands/setup.ts";
-import { emptyCommand } from "./commands/empty.ts";
-import { dropCommand } from "./commands/drop.ts";
-import { seedCommand } from "./commands/seed.ts";
 
 const setup = define({
   name: "setup",

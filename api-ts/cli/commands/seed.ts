@@ -1,6 +1,6 @@
-import type { Command } from "../core/executor.ts";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Command } from "../core/executor.ts";
 
 interface SeedData {
   accounts: Array<{

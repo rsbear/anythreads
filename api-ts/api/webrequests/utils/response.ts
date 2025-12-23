@@ -1,7 +1,7 @@
 import type { ErrorResponse, SuccessResponse } from "../types";
 
-export function json<T>(data: SuccessResponse<T> | ErrorResponse, status = 200): Response {
-  return new Response(JSON.stringify(data), {
+export function json<T>(value: SuccessResponse<T> | ErrorResponse, status = 200): Response {
+  return new Response(JSON.stringify(value), {
     status,
     headers: {
       "Content-Type": "application/json",
@@ -9,8 +9,8 @@ export function json<T>(data: SuccessResponse<T> | ErrorResponse, status = 200):
   });
 }
 
-export function success<T>(data: T, status = 200): Response {
-  return json<T>({ data }, status);
+export function success<T>(value: T, status = 200): Response {
+  return json<T>({ value }, status);
 }
 
 export function error(code: string, message: string, status = 400): Response {
@@ -20,11 +20,11 @@ export function error(code: string, message: string, status = 400): Response {
 export function resultToResponse<T>(result: {
   isOk: boolean;
   isErr: boolean;
-  data?: T;
+  value?: T;
   err?: { tag: string; msg: string };
 }): Response {
-  if (result.isOk && result.data !== undefined) {
-    return success(result.data);
+  if (result.isOk && result.value !== undefined) {
+    return success(result.value);
   }
   if (result.isErr && result.err) {
     const status = errorCodeToStatus(result.err.tag);

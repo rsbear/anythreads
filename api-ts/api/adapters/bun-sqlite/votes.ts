@@ -2,31 +2,49 @@ import type { Database } from "bun:sqlite";
 import type { Vote } from "../../schema.ts";
 import { createId } from "../../utils/create-id.ts";
 import { type Result, resultErr, resultOk } from "../../utils/result.ts";
-import type { VoteInput, VotesDataAdapter, VotesFindManyOptions } from "../adapter-types.ts";
+import type { VotesDataAdapter, VotesFindManyOptions } from "../adapter-types.ts";
 import { mapDbToVote } from "../dtos.ts";
 
 export class BunSQLiteVotesAdapter implements VotesDataAdapter {
   constructor(private db: Database) {}
 
-  public async voteUp(vote: VoteInput): Promise<Result<Vote>> {
-    return this.createOrUpdateVote(vote, "up");
+  public async voteUpThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, null, "up");
   }
 
-  public async voteDown(vote: VoteInput): Promise<Result<Vote>> {
-    return this.createOrUpdateVote(vote, "down");
+  public async voteDownThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, null, "down");
+  }
+
+  public async voteUpReply(
+    accountId: string,
+    threadId: string,
+    replyId: string,
+  ): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, replyId, "up");
+  }
+
+  public async voteDownReply(
+    accountId: string,
+    threadId: string,
+    replyId: string,
+  ): Promise<Result<Vote>> {
+    return this.createOrUpdateVote(accountId, threadId, replyId, "down");
   }
 
   private async createOrUpdateVote(
-    vote: VoteInput,
+    accountId: string,
+    threadId: string,
+    replyId: string | null,
     direction: "up" | "down",
   ): Promise<Result<Vote>> {
     try {
       const whereClauses = ["account_id = ?", "thread_id = ?"];
-      const whereValues: any[] = [vote.accountId, vote.threadId];
+      const whereValues: any[] = [accountId, threadId];
 
-      if (vote.replyId) {
+      if (replyId) {
         whereClauses.push("reply_id = ?");
-        whereValues.push(vote.replyId);
+        whereValues.push(replyId);
       } else {
         whereClauses.push("reply_id IS NULL");
       }
@@ -54,15 +72,7 @@ export class BunSQLiteVotesAdapter implements VotesDataAdapter {
           INSERT INTO votes (id, thread_id, account_id, reply_id, direction, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
-        stmt.run(
-          id,
-          vote.threadId ?? null,
-          vote.accountId,
-          vote.replyId ?? null,
-          direction,
-          now,
-          now,
-        );
+        stmt.run(id, threadId, accountId, replyId, direction, now, now);
 
         const result = this.db.prepare("SELECT * FROM votes WHERE id = ?").get(id);
         return resultOk(mapDbToVote(result));

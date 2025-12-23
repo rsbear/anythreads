@@ -1,23 +1,37 @@
 import type { Vote } from "../../schema";
 import type { Result } from "../../utils/result";
-import type { VoteInput, VotesDataAdapter, VotesFindManyOptions } from "../adapter-types";
+import type { VotesDataAdapter, VotesFindManyOptions } from "../adapter-types";
 import type { FetchConfig } from "./utils";
 import { fetchRequest } from "./utils";
 
 export class FetchVotesAdapter implements VotesDataAdapter {
   constructor(private config: FetchConfig) {}
 
-  async voteUp(vote: VoteInput): Promise<Result<Vote>> {
-    return fetchRequest<Vote>(this.config, "/votes/up", {
+  async voteUpThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return fetchRequest<Vote>(this.config, "/votes/thread/up", {
       method: "POST",
-      body: vote,
+      body: { accountId, threadId },
     });
   }
 
-  async voteDown(vote: VoteInput): Promise<Result<Vote>> {
-    return fetchRequest<Vote>(this.config, "/votes/down", {
+  async voteDownThread(accountId: string, threadId: string): Promise<Result<Vote>> {
+    return fetchRequest<Vote>(this.config, "/votes/thread/down", {
       method: "POST",
-      body: vote,
+      body: { accountId, threadId },
+    });
+  }
+
+  async voteUpReply(accountId: string, threadId: string, replyId: string): Promise<Result<Vote>> {
+    return fetchRequest<Vote>(this.config, "/votes/reply/up", {
+      method: "POST",
+      body: { accountId, threadId, replyId },
+    });
+  }
+
+  async voteDownReply(accountId: string, threadId: string, replyId: string): Promise<Result<Vote>> {
+    return fetchRequest<Vote>(this.config, "/votes/reply/down", {
+      method: "POST",
+      body: { accountId, threadId, replyId },
     });
   }
 

@@ -16,7 +16,7 @@ import {
 } from "../dtos.ts";
 
 export class PostgresThreadsAdapter implements ThreadsDataAdapter {
-  constructor(private db: any) { }
+  constructor(private db: any) {}
 
   public async create(thread: ThreadCreate): Promise<Result<Thread>> {
     try {

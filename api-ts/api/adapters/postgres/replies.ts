@@ -1,4 +1,5 @@
 import type { Reply } from "../../schema.ts";
+import { createId } from "../../utils/create-id.ts";
 import { type Result, resultErr, resultOk } from "../../utils/result.ts";
 import type {
   FindManyOptions,
@@ -8,7 +9,6 @@ import type {
   ReplyUpdate,
 } from "../adapter-types.ts";
 import { mapDbToReply } from "../dtos.ts";
-import { createId } from "../../utils/create-id.ts";
 
 export class PostgresRepliesAdapter implements RepliesDataAdapter {
   constructor(private db: any) {}
