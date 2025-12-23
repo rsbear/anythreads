@@ -198,7 +198,10 @@ export class PostgresThreadsAdapter implements ThreadsDataAdapter {
    * @param maxReplyDepth - Maximum depth of nested replies to fetch (default: 10)
    * @returns A Result containing the complete thread with nested replies
    */
-  public async complete(id: string, maxReplyDepth?: number): Promise<Result<ThreadComplete>> {
+  public async complete(
+    id: string,
+    maxReplyDepth?: number,
+  ): Promise<Result<ThreadComplete>> {
     try {
       const threadResult = await this.db.query(
         `
@@ -357,6 +360,50 @@ export class PostgresThreadsAdapter implements ThreadsDataAdapter {
     } catch (err) {
       console.log("THREAD_COMPLETE", err);
       return resultErr("THREAD_COMPLETE", "Failed to fetch complete thread");
+    }
+  }
+
+  public async userVotes(params: {
+    accountId: string;
+    threadId: string;
+    toHash: boolean;
+  }): Promise<Result<import("../../schema").UserVote[] | Record<string, import("../../schema").UserVote>>> {
+    try {
+      const { accountId, threadId, toHash } = params;
+
+      const result = await this.db.query(
+        `
+        SELECT 
+          thread_id,
+          reply_id,
+          account_id,
+          direction
+        FROM votes
+        WHERE thread_id = $1 AND account_id = $2
+      `,
+        [threadId, accountId],
+      );
+
+      const userVotes: import("../../schema").UserVote[] = result.rows.map(vote => ({
+        threadId: vote.thread_id,
+        replyId: vote.reply_id,
+        accountId: vote.account_id,
+        direction: vote.direction as "up" | "down",
+      }));
+
+      if (toHash) {
+        const voteHash: Record<string, import("../../schema").UserVote> = {};
+        for (const vote of userVotes) {
+          const key = vote.replyId ? `reply:${vote.replyId}` : `thread:${vote.threadId}`;
+          voteHash[key] = vote;
+        }
+        return resultOk(voteHash);
+      }
+
+      return resultOk(userVotes);
+    } catch (err) {
+      console.log("USER_VOTES", err);
+      return resultErr("USER_VOTES", "Failed to fetch user votes");
     }
   }
 }

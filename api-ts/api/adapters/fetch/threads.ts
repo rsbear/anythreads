@@ -10,7 +10,7 @@ import type { FetchConfig } from "./utils";
 import { fetchRequest } from "./utils";
 
 export class FetchThreadsAdapter implements ThreadsDataAdapter {
-  constructor(private config: FetchConfig) {}
+  constructor(private config: FetchConfig) { }
 
   async create(thread: ThreadCreate): Promise<Result<Thread>> {
     return fetchRequest<Thread>(this.config, "/threads", {
@@ -54,5 +54,23 @@ export class FetchThreadsAdapter implements ThreadsDataAdapter {
     if (maxReplyDepth !== undefined) params.maxReplyDepth = maxReplyDepth;
 
     return fetchRequest<ThreadComplete>(this.config, `/threads/${id}/complete`, { params });
+  }
+
+  async userVotes(params: {
+    accountId: string;
+    threadId: string;
+    toHash: boolean;
+  }): Promise<
+    Result<import("../../schema").UserVote[] | Record<string, import("../../schema").UserVote>>
+  > {
+    const queryParams: Record<string, any> = {
+      toHash: params.toHash,
+    };
+
+    return fetchRequest<
+      import("../../schema").UserVote[] | Record<string, import("../../schema").UserVote>
+    >(this.config, `/threads/${params.threadId}/votes/${params.accountId}`, {
+      params: queryParams,
+    });
   }
 }

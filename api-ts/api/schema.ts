@@ -57,6 +57,13 @@ export type VoteCount = {
   total: number;
 };
 
+export type UserVote = {
+  threadId: string;
+  replyId: string | null;
+  accountId: string;
+  direction: "up" | "down" | "none";
+};
+
 export interface ReplyWithNested extends Reply {
   account: Account;
   voteCount: VoteCount;

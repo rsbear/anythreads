@@ -130,18 +130,41 @@ function RecursiveReply() {
           <Reply.CreatedAt />
         </div>
         <Reply.Body />
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <Vote.UpvoteButton>↑</Vote.UpvoteButton>
-          <Vote.UpvoteCount />
-          <Vote.DownvoteButton>↓</Vote.DownvoteButton>
-          <Vote.DownvoteCount />
-        </div>
+        <VoteButtons />
       </div>
       {reply.replies?.map((x) => (
         <Reply.Root key={x.id} reply={x} enableVotes>
           <RecursiveReply />
         </Reply.Root>
       ))}
+    </div>
+  );
+}
+
+function VoteButtons() {
+  const v = Vote.useVote();
+  return (
+    <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          opacity: v.currentUserDirection === "up" ? "0.2" : "1",
+        }}
+      >
+        <Vote.UpvoteCount />
+        <Vote.UpvoteButton>↑</Vote.UpvoteButton>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          opacity: v.currentUserDirection === "down" ? "0.2" : "1",
+        }}
+      >
+        <Vote.DownvoteButton>↓</Vote.DownvoteButton>
+        <Vote.DownvoteCount />
+      </div>
     </div>
   );
 }

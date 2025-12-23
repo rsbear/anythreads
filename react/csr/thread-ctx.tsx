@@ -9,7 +9,7 @@ const ThreadDataCtx = React.createContext<{
   pickAsync: (id: string) => Promise<void>;
 }>({
   thread: undefined,
-  pickAsync: async (_id: string) => {},
+  pickAsync: async (_id: string) => { },
 });
 
 export const useThreadData = () => {
@@ -29,6 +29,7 @@ export function ThreadDataProvider({ children }: React.PropsWithChildren) {
     async (id: string) => {
       if (!at) return;
       const res = await at.threads.complete(id);
+      console.log("pickAsync", res);
       setResult(res);
     },
     [at],

@@ -11,6 +11,7 @@ const routes: Route[] = [
   { method: "GET", pattern: "/threads", handler: threads.listThreads },
   { method: "GET", pattern: "/threads/:id", handler: threads.getThread },
   { method: "GET", pattern: "/threads/:id/complete", handler: threads.getThreadComplete },
+  { method: "GET", pattern: "/threads/:id/votes/:userId", handler: threads.getUserVotes },
   { method: "POST", pattern: "/threads", handler: threads.createThread },
   { method: "PATCH", pattern: "/threads/:id", handler: threads.updateThread },
   { method: "DELETE", pattern: "/threads/:id", handler: threads.deleteThread },

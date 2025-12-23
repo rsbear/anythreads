@@ -24,7 +24,7 @@ import {
 } from "../dtos.ts";
 
 export class BunSQLiteThreadsAdapter implements ThreadsDataAdapter {
-  constructor(private db: Database) {}
+  constructor(private db: Database) { }
 
   public async create(thread: ThreadCreate): Promise<Result<Thread>> {
     try {
@@ -358,6 +358,58 @@ export class BunSQLiteThreadsAdapter implements ThreadsDataAdapter {
     } catch (err) {
       console.log("THREAD_COMPLETE", err);
       return resultErr("THREAD_COMPLETE", "Failed to fetch complete thread");
+    }
+  }
+
+  public async userVotes(params: {
+    accountId: string;
+    threadId: string;
+    toHash: boolean;
+  }): Promise<
+    Result<import("../../schema").UserVote[] | Record<string, import("../../schema").UserVote>>
+  > {
+    try {
+      const { accountId, threadId, toHash } = params;
+
+      const votes = this.db
+        .prepare(
+          `
+        SELECT 
+          thread_id,
+          reply_id,
+          account_id,
+          direction
+        FROM votes
+        WHERE thread_id = ? AND account_id = ?
+      `,
+        )
+        .all(threadId, accountId) as Array<{
+          thread_id: string;
+          reply_id: string | null;
+          account_id: string;
+          direction: string;
+        }>;
+
+      const userVotes: import("../../schema").UserVote[] = votes.map((vote) => ({
+        threadId: vote.thread_id,
+        replyId: vote.reply_id,
+        accountId: vote.account_id,
+        direction: vote.direction as "up" | "down",
+      }));
+
+      if (toHash) {
+        const voteHash: Record<string, import("../../schema").UserVote> = {};
+        for (const vote of userVotes) {
+          const key = vote.replyId ? `reply:${vote.replyId}` : `thread:${vote.threadId}`;
+          voteHash[key] = vote;
+        }
+        return resultOk(voteHash);
+      }
+
+      return resultOk(userVotes);
+    } catch (err) {
+      console.log("USER_VOTES", err);
+      return resultErr("USER_VOTES", "Failed to fetch user votes");
     }
   }
 }

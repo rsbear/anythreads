@@ -1,8 +1,8 @@
 import type { Result } from "@anythreads/api/result";
-import type { Vote } from "@anythreads/api/schema";
+import type { Vote, UserVote } from "@anythreads/api/schema";
 import type { VoteCount } from "@anythreads/api/threads";
 import type { PropsWithChildren } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useAnythreads } from "../anythreads-ctx";
 import { useCurrentAccount } from "../current-account";
 
@@ -13,6 +13,56 @@ type VoteContextType = {
 };
 
 const VoteCtx = createContext<VoteContextType | undefined>(undefined);
+
+export function useThreadUserVotes(threadId: string) {
+  const at = useAnythreads();
+  const currentAccount = useCurrentAccount();
+  const [votes, setVotes] = useState<Record<string, UserVote>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentAccount.isOk || !threadId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    at.threads
+      .userVotes({
+        accountId: currentAccount.value.id,
+        threadId,
+        toHash: true,
+      })
+      .then((result) => {
+        if (result.isOk) {
+          setVotes(result.value as Record<string, UserVote>);
+        }
+        setLoading(false);
+      });
+  }, [threadId, currentAccount, at]);
+
+  return { votes, loading };
+}
+
+export function useVote() {
+  const ctx = useContext(VoteCtx);
+  if (!ctx) {
+    throw new Error("useVote must be used within a Vote.Root component");
+  }
+
+  const { votes } = useThreadUserVotes(ctx.threadId!);
+
+  const key = ctx.replyId ? `reply:${ctx.replyId}` : `thread:${ctx.threadId}`;
+  const userVote = votes[key];
+  const currentUserDirection = userVote?.direction || "none";
+
+  return {
+    voteCount: ctx.vote,
+    currentUserDirection,
+    threadId: ctx.threadId,
+    replyId: ctx.replyId,
+  };
+}
 
 export function Root({
   children,

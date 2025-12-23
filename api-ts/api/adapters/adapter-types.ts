@@ -1,4 +1,4 @@
-import type { Account, Reply, Thread, ThreadComplete, Vote } from "../schema";
+import type { Account, Reply, Thread, ThreadComplete, Vote, UserVote } from "../schema";
 import type { Result } from "../utils/result";
 
 /**
@@ -24,7 +24,15 @@ export interface ThreadsDataAdapter {
   findOne(id: string): Promise<Result<Thread>>;
   findMany(opts?: FindManyOptions): Promise<Result<Thread[]>>;
   update(id: string, thread: ThreadUpdate): Promise<Result<Thread>>;
-  complete(id: string, maxReplyDepth?: number): Promise<Result<ThreadComplete>>;
+  complete(
+    id: string,
+    maxReplyDepth?: number,
+  ): Promise<Result<ThreadComplete>>;
+  userVotes(params: {
+    accountId: string;
+    threadId: string;
+    toHash: boolean;
+  }): Promise<Result<UserVote[] | Record<string, UserVote>>>;
 }
 
 export interface AccountsDataAdapter {

@@ -41,6 +41,11 @@ export async function getThreadComplete(
 ): Promise<Response> {
   const query = parseQueryParams(request);
   const result = await anythreads.threads.complete(params.id || "", query.maxReplyDepth);
+
+  if (result.isErr) {
+    return resultToResponse(result);
+  }
+
   return resultToResponse(result);
 }
 
@@ -90,5 +95,26 @@ export async function deleteThread(
   params: Record<string, string>,
 ): Promise<Response> {
   const result = await anythreads.threads.delete(params.id || "");
+  return resultToResponse(result);
+}
+
+export async function getUserVotes(
+  anythreads: Anythreads,
+  request: Request,
+  params: Record<string, string>,
+): Promise<Response> {
+  const query = parseQueryParams(request);
+  const toHash = query.toHash === "true";
+
+  const result = await anythreads.threads.userVotes({
+    accountId: params.userId || "",
+    threadId: params.id || "",
+    toHash: toHash,
+  });
+
+  if (result.isErr) {
+    return resultToResponse(result);
+  }
+
   return resultToResponse(result);
 }
