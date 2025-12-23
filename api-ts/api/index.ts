@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { DataAdapter } from "./adapters/adapter-types";
-import { createBunSQLiteAdapter } from "./adapters/bun-sqlite/adapter";
+import { createBunSQLiteAdapter } from "./adapter-bunsqlite";
 import { createFetchAdapter } from "./adapters/fetch/adapter";
 import { createPostgresAdapter } from "./adapters/postgres/adapter";
 
