@@ -15,7 +15,15 @@ import {
   mapDbToThread,
   maskDeletedAccount,
 } from "../dtos.ts";
-import type { Thread, ThreadCreate, ThreadsDataAdapter, ThreadUpdate } from "./types.ts";
+import type {
+  Thread,
+  ThreadCreate,
+  ThreadsDataAdapter,
+  ThreadsFindManyOptions,
+  ThreadUpdate,
+  ThreadWithDetails,
+  VoteCount,
+} from "./types.ts";
 
 export class BunSQLiteThreadsAdapter implements ThreadsDataAdapter {
   constructor(private db: Database) { }
@@ -145,7 +153,7 @@ export class BunSQLiteThreadsAdapter implements ThreadsDataAdapter {
   /**
    * findMany
    */
-  public async findMany(opts?: FindManyOptions): Promise<Result<Thread[]>> {
+  public async findMany(opts?: ThreadsFindManyOptions): Promise<Result<Thread[]>> {
     try {
       const limit = opts?.limit || 50;
       const offset = opts?.offset || 0;

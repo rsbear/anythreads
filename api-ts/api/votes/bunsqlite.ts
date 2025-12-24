@@ -1,8 +1,8 @@
 import type { Database } from "bun:sqlite";
-import { createId } from "../../utils/create-id.ts";
-import { type Result, resultErr, resultOk } from "../../utils/result.ts";
-import { mapDbToVote } from "../dtos.ts";
-import type { Vote, VotesDataAdapter } from "./types.ts";
+import { createId } from "../common/create-id.ts";
+import { type Result, resultErr, resultOk } from "../common/result.ts";
+import { mapDbToVote } from "../common/dtos.ts";
+import type { Vote, VotesDataAdapter, VotesFindManyOptions } from "./types.ts";
 
 export class BunSQLiteVotesAdapter implements VotesDataAdapter {
   constructor(private db: Database) { }
@@ -107,6 +107,50 @@ export class BunSQLiteVotesAdapter implements VotesDataAdapter {
     } catch (err) {
       console.log("VOTE_FIND_ONE", err);
       return resultErr("VOTE_FIND_ONE", "Failed to find vote");
+    }
+  }
+
+  public async threadUser(threadId: string, accountId: string, options?: { asList: boolean }) {
+    try {
+      const votes = this.db
+        .prepare(
+          `
+        SELECT 
+          thread_id,
+          reply_id,
+          account_id,
+          direction
+        FROM votes
+        WHERE thread_id = ? AND account_id = ?
+      `,
+        )
+        .all(threadId, accountId) as Array<{
+          thread_id: string;
+          reply_id: string | null;
+          account_id: string;
+          direction: string;
+        }>;
+
+      const userVotes: Partial<Vote>[] = votes.map((vote) => ({
+        threadId: vote.thread_id,
+        replyId: vote.reply_id,
+        accountId: vote.account_id,
+        direction: vote.direction as "up" | "down",
+      }));
+
+      if (options?.asList) {
+        return resultOk(userVotes);
+      }
+
+      const voteHash: Record<string, Partial<Vote>> = {};
+      for (const vote of userVotes) {
+        const key = vote.replyId ? `reply:${vote.replyId}` : `thread:${vote.threadId}`;
+        voteHash[key] = vote;
+      }
+      return resultOk(voteHash);
+    } catch (err) {
+      console.log("USER_VOTES", err);
+      return resultErr("THREAD_USER_VOTES", "Failed to fetch user votes");
     }
   }
 

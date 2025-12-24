@@ -1,4 +1,6 @@
 import type { Result } from "../../utils/result";
+import type { Account } from "../accounts/types";
+import type { Reply } from "../replies/types";
 
 /**
  * The interface for a thread data adapter.
