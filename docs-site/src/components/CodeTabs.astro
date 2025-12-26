@@ -1,0 +1,106 @@
+---
+// Get the raw HTML content
+const slots = await Astro.slots.render('default');
+---
+
+<div class="code-group rounded-md border border-txt/20">
+  <div class="tabs bg-pane border-b border-txt/20">
+    <input type="radio" name="pkg" id="tab-npm" checked>
+    <label for="tab-npm">
+      <span class="i-catppuccin-npm text-sm mt-px"></span>
+      <span>npm</span>
+    </label>
+    
+    <input type="radio" name="pkg" id="tab-pnpm">
+    <label for="tab-pnpm">
+      <span class="i-catppuccin-pnpm text-sm mt-px"></span>
+      <span>pnpm</span>
+    </label>
+    
+    <input type="radio" name="pkg" id="tab-bun">
+    <label for="tab-bun">
+      <span class="i-catppuccin-bun text-sm mt-px"></span>
+      <span>bun</span>
+    </label>
+    
+    <input type="radio" name="pkg" id="tab-deno">
+    <label for="tab-deno">
+      <span class="i-catppuccin-deno text-sm mt-px"></span>
+      <span>deno</span>
+    </label>
+  </div>
+  
+  <div class="code-panels">
+    <div class="code-panel" data-tab="npm">
+      <slot name="npm" />
+    </div>
+    <div class="code-panel" data-tab="pnpm">
+      <slot name="pnpm" />
+    </div>
+    <div class="code-panel" data-tab="bun">
+      <slot name="bun" />
+    </div>
+    <div class="code-panel" data-tab="deno">
+      <slot name="deno" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .code-group {
+    overflow: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    padding: 0 0.25rem;
+  }
+
+  .tabs input[type="radio"] {
+    display: none;
+  }
+
+  .tabs label {
+    padding: 0.15rem 0.75rem;
+    margin: .25rem 0;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    opacity: 0.6;
+  }
+
+  .tabs label:hover {
+    opacity: 0.8;
+  }
+
+  .tabs input[type="radio"]:checked + label {
+    font-weight: 500;
+    border-radius: 0.375rem;
+    color: var(--color-txt);
+    opacity: 1;
+  }
+
+  .code-panels {
+    position: relative;
+  }
+
+  .code-panel {
+    display: none;
+  }
+
+  .code-panel :global(pre) {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .code-group:has(#tab-npm:checked) .code-panel[data-tab="npm"],
+  .code-group:has(#tab-pnpm:checked) .code-panel[data-tab="pnpm"],
+  .code-group:has(#tab-bun:checked) .code-panel[data-tab="bun"],
+  .code-group:has(#tab-deno:checked) .code-panel[data-tab="deno"] {
+    display: block;
+  }
+</style>

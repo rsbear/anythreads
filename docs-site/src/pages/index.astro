@@ -1,0 +1,41 @@
+---
+import { createLeftNavJson } from './../create-left-nav-json';
+import Html from '../layouts/Html.astro';
+import DocsLayout from '../layouts/DocsLayout.astro';
+import SideNav from '../components/SideNav.astro';
+
+
+const markdowns = Object.values(import.meta.glob('./md/**/*.md', { eager: true }));
+const navLinks = createLeftNavJson(markdowns);
+
+const bullets = [
+  "Bring your own database, Bun SQLite, Postgres, etc..",
+  "Simple CLI for database management",
+  "Drop in handler for HTTP frameworks that are based on Web Standards",
+  "Namespaced functions for consistent data dealing",
+  "Unstyled React library with composition as a first principle",
+  "Type safety for all your data",
+]
+
+---
+<Html title="Anythreads">
+  <div class="flex flex-col min-h-dvh p-10">
+    <div class="font-mono">
+      <h1 class="text-3xl font-semibold">Anythreads</h1>
+      <p class="text-lg">
+        <span>Is a suite of libraries for dropping threads into TypeScript projects.</span>
+      </p>
+      <ul class="py-8 mb-6">
+        {bullets.map((bullet, i) => (
+          <li class="text-lg">
+            <span class="opacity-40">-</span>
+            <span>{bullet}</span>
+          </li>
+        ))}
+      </ul>
+      <a href="/md/hello/start" class="ring-1 ring-black bg-pink-300 rounded-lg px-4 py-3">
+        Explore the docs
+      </a>
+    </div>
+  </div>
+</Html>

@@ -1,0 +1,65 @@
+---
+import ThemeDropdown from '../islands/ThemeDropdown.tsx';
+const { sideNavJson } = Astro.props;
+---
+
+<div class="flex flex-col sticky top-4 self-start">
+  <div class="pl-4 border-l border-txt/10">
+    <h3>Anythreads</h3>
+    <ul class="links-nav flex-0">
+      {sideNavJson.map((x) => (
+        <li>
+          <h3>{x.parent}</h3>
+          <div class="sub-links-list">
+            {x.docs.map((y) => (
+            <a 
+              class="text-txt"
+              href={`/md/${y.parent.toLowerCase()}/${y.title.toLowerCase().replaceAll(' ', '-')}`}>{y.title}</a>
+            ))}
+          </div>
+        </li>
+     ))}
+    </ul>
+          <ThemeDropdown client:only />
+  </div>
+</div>
+
+<style>
+  .links-nav {
+    list-style: none;
+    padding: 0;
+  }
+
+  h3 {
+    font-weight: normal;
+    font-size: 0.825rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .links-nav li {
+    margin-bottom: 1.25rem;
+  }
+
+  .links-nav li a {
+    display: block;
+    padding: 0.1rem 0;
+    margin: 0.1rem 0;
+    text-decoration: none;
+    font-family: monospace;
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .links-nav li a:hover {
+    opacity: 1;
+  }
+
+  .links-nav li a:hover {
+    color: #555;
+  }
+
+  .links-nav li a:active {
+    color: #555;
+  }
+
+</style>
