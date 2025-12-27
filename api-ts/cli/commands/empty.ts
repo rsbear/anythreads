@@ -5,13 +5,13 @@ type TableName = (typeof TABLES)[number];
 
 async function emptyTable(
   db: any,
-  dbType: "bun_sqlite" | "postgres",
+  dbType: "bun_sqlite" | "sqlite3" | "postgres",
   table: TableName,
 ): Promise<void> {
   console.log(`Emptying ${table} table...`);
   const sql = `DELETE FROM ${table}`;
 
-  if (dbType === "bun_sqlite") {
+  if (dbType === "bun_sqlite" || dbType === "sqlite3") {
     db.run(sql);
   } else {
     await db.query(sql);
@@ -37,7 +37,9 @@ export const emptyCommand: Command = {
       await emptyTable(config.db, config.dbType, target as TableName);
       console.log(`${target} table emptied successfully`);
     } else {
-      throw new Error(`Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`);
+      throw new Error(
+        `Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`,
+      );
     }
   },
 };

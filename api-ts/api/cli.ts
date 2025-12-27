@@ -1,9 +1,11 @@
 import type { Database } from "bun:sqlite";
+
 import type { Anythreads } from "./index";
 import { createAnythreads } from "./index";
 
 interface SetupAnythreadsOptions {
   bunSQLite?: Database;
+  sqlite3?: any;
   postgres?: any;
   fetch?: {
     url: string;
@@ -14,14 +16,16 @@ interface SetupAnythreadsOptions {
 export interface AnythreadsCLI {
   instance: Anythreads;
   db: Database | any | null;
-  dbType: "bun_sqlite" | "postgres" | "fetch";
+  dbType: "bun_sqlite" | "sqlite3" | "postgres" | "fetch";
 }
 
 export function setupAnythreads(options: SetupAnythreadsOptions): AnythreadsCLI {
-  const adapterCount = [options.bunSQLite, options.postgres, options.fetch].filter(Boolean).length;
+  const adapterCount = [options.bunSQLite, options.sqlite3, options.postgres, options.fetch].filter(
+    Boolean,
+  ).length;
 
   if (adapterCount === 0) {
-    throw new Error("An adapter is required (bunSQLite, postgres, or fetch)");
+    throw new Error("An adapter is required (bunSQLite, sqlite3, postgres, or fetch)");
   }
 
   if (adapterCount > 1) {
@@ -29,11 +33,24 @@ export function setupAnythreads(options: SetupAnythreadsOptions): AnythreadsCLI 
   }
 
   if (options.bunSQLite) {
-    const instanceResult = createAnythreads({ adapter: { bunSQLite: options.bunSQLite } });
+    const instanceResult = createAnythreads({
+      adapter: { bunSQLite: options.bunSQLite },
+    });
     return {
       instance: instanceResult,
       db: options.bunSQLite,
       dbType: "bun_sqlite" as const,
+    };
+  }
+
+  if (options.sqlite3) {
+    const instanceResult = createAnythreads({
+      adapter: { sqlite3: options.sqlite3 },
+    });
+    return {
+      instance: instanceResult,
+      db: options.sqlite3,
+      dbType: "sqlite3" as const,
     };
   }
 

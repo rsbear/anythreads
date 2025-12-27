@@ -98,15 +98,17 @@ const TABLE_INDEXES: Record<TableName, string[]> = {
 
 async function setupTable(
   db: any,
-  dbType: "bun_sqlite" | "postgres",
+  dbType: "bun_sqlite" | "sqlite3" | "postgres",
   table: TableName,
 ): Promise<void> {
   console.log(`Setting up ${table} table...`);
 
   const schema =
-    dbType === "bun_sqlite" ? TABLE_SCHEMAS_SQLITE[table] : TABLE_SCHEMAS_POSTGRES[table];
+    dbType === "bun_sqlite" || dbType === "sqlite3"
+      ? TABLE_SCHEMAS_SQLITE[table]
+      : TABLE_SCHEMAS_POSTGRES[table];
 
-  if (dbType === "bun_sqlite") {
+  if (dbType === "bun_sqlite" || dbType === "sqlite3") {
     db.run(schema);
     for (const indexSql of TABLE_INDEXES[table]) {
       db.run(indexSql);
@@ -142,7 +144,9 @@ export const setupCommand: Command = {
       await setupTable(config.db, config.dbType, target as TableName);
       console.log(`${target} table set up successfully`);
     } else {
-      throw new Error(`Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`);
+      throw new Error(
+        `Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`,
+      );
     }
   },
 };

@@ -1,7 +1,7 @@
 export interface AnythreadsConfig {
   instance: any;
   db: any;
-  dbType: "bun_sqlite" | "postgres";
+  dbType: "bun_sqlite" | "sqlite3" | "postgres";
 }
 
 export async function loadConfig(configPath: string): Promise<AnythreadsConfig> {

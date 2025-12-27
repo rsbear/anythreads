@@ -1,13 +1,19 @@
 import type { Database } from "bun:sqlite";
-import type { DataAdapter } from "./adapters/adapter-types";
-import { createBunSQLiteAdapter } from "./adapter-bunsqlite";
-import { createFetchAdapter } from "./adapters/fetch/adapter";
-import { createPostgresAdapter } from "./adapters/postgres/adapter";
+import {
+  createBunSQLiteAdapter,
+  createFetchAdapter,
+  createPostgresAdapter,
+  createSQLite3Adapter,
+} from "./adapters/adapters.ts";
+import type { DataAdapter } from "./adapters/types.ts";
 
 export type AdapterConfig =
   | { bunSQLite: Database }
+  | { sqlite3: any }
   | { postgres: any }
-  | { fetch: { url: string; credentials?: "include" | "omit" | "same-origin" } };
+  | {
+      fetch: { url: string; credentials?: "include" | "omit" | "same-origin" };
+    };
 
 export type CacheConfig = { redis: any } | { valkey: any };
 
@@ -21,23 +27,23 @@ export type ModerationConfig = {
 
 export interface CreateAnythreadsOptions {
   adapter: AdapterConfig;
-  cache?: CacheConfig;
-  moderation?: ModerationConfig;
 }
 
-export type { DataAdapter as Anythreads } from "./adapters/adapter-types";
+export type { DataAdapter as Anythreads } from "./adapters/types.ts";
 
 export function createAnythreads(options: CreateAnythreadsOptions): DataAdapter {
   let baseAdapter: DataAdapter;
 
   if ("bunSQLite" in options.adapter) {
     baseAdapter = createBunSQLiteAdapter(options.adapter.bunSQLite);
+  } else if ("sqlite3" in options.adapter) {
+    baseAdapter = createSQLite3Adapter(options.adapter.sqlite3);
   } else if ("postgres" in options.adapter) {
     baseAdapter = createPostgresAdapter(options.adapter.postgres);
   } else if ("fetch" in options.adapter) {
     baseAdapter = createFetchAdapter(options.adapter.fetch);
   } else {
-    throw new Error("An adapter is required (bunSQLite, postgres, or fetch)");
+    throw new Error("An adapter is required (bunSQLite, sqlite3, postgres, or fetch)");
   }
 
   return baseAdapter;
