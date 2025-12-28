@@ -1,19 +1,26 @@
+import * as React from "react";
 import "./App.css";
 
 import { createAnythreads } from "@anythreads/api";
-import {
-  Account,
-  AnythreadsProvider,
-  CurrentAccountProvider,
-  Thread,
-  Reply,
-  useThreadData,
-  useThreadsData,
-  useCreateReply,
-  Vote,
-} from "@anythreads/react/csr";
 
-const anythreads = createAnythreads({
+import type { VotesInThread } from "@anythreads/api/accounts";
+import type { Msg } from "@anythreads/api/msg";
+import type {
+  ReplyWithNested,
+  ThreadComplete,
+  Thread as ThreadType,
+} from "@anythreads/api/threads";
+import type { Account as AccountType } from "@anythreads/api/accounts";
+
+import { Thread, Reply, Account, Vote } from "@anythreads/react";
+import {
+  AnythreadsPersonalization,
+  ThreadPersonalization,
+} from "@anythreads/react/browser";
+import { store } from "@simplestack/store";
+import { useStoreValue } from "@simplestack/store/react";
+
+const at = createAnythreads({
   adapter: {
     fetch: {
       url: "http://localhost:3000/anythreads",
@@ -22,166 +29,86 @@ const anythreads = createAnythreads({
   },
 });
 
-function App() {
-  return (
-    <AnythreadsProvider instance={anythreads}>
-      <CurrentAccountProvider currentAccountId="account_1">
-        <Main />
-      </CurrentAccountProvider>
-    </AnythreadsProvider>
+const picked = store<Msg<ThreadComplete>>({ kind: "none", value: null });
+const myVotes = store<Msg<VotesInThread>>({ kind: "none", value: null });
+
+export default function App() {
+  const [msg, setMsg] = React.useState<Msg<ThreadType[]> | undefined>(
+    undefined,
   );
-}
 
-function Main() {
-  const { threads } = useThreadsData();
-  const { pickAsync } = useThreadData();
+  const complete = useStoreValue(picked);
+  const threadPersonalized = useStoreValue(myVotes);
 
-  return (
-    <div
-      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
-    >
-      <div>
-        {threads?.value?.map((thread) => (
-          <Thread.Root key={thread.id} thread={thread}>
-            <div style={styles.flexCol}>
-              <button type="button" onClick={() => pickAsync(thread.id)}>
-                <Thread.Title />
-              </button>
+  React.useEffect(() => {
+    at.threads.findMany().then(setMsg);
+  }, []);
 
-              <Thread.Body />
-              <Thread.CreatedAt />
-            </div>
-          </Thread.Root>
-        ))}
-      </div>
-
-      <FullThread />
-    </div>
-  );
-}
-
-function FullThread() {
-  const { thread } = useThreadData();
-  const { replyToThread } = useCreateReply();
-
-  const submitReply = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!thread) return;
-    if (!thread.isOk) return;
-    const fd = new FormData(e.currentTarget);
-
-    const bodyEl = fd.get("body") ?? "";
-    const body = typeof bodyEl === "string" ? bodyEl : "";
-    if (!body) return;
-
-    const res = await replyToThread(body);
-
-    console.log(res);
-  };
+  async function handleClickToPick(id: string) {
+    at.threads.complete(id).then(picked.set);
+    at.accounts
+      .votesInThread({
+        threadId: id,
+        accountId: "account_1",
+      })
+      .then(myVotes.set);
+  }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.1rem",
-        alignItems: "flex-start",
-      }}
-    >
-      {!thread || thread.isErr ? (
-        <div>click an item to select</div>
-      ) : (
-        <Thread.Root thread={thread.value.thread} enableVotes>
-          <Thread.Title />
-          <Thread.Body />
-          <Thread.CreatedAt />
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <Vote.UpvoteButton />
-            <Vote.UpvoteCount />
-            <Vote.DownvoteButton />
-            <Vote.DownvoteCount />
-          </div>
-          {thread.isOk &&
-            thread.value?.replies?.map((x) => (
-              <Reply.Root key={x.id} reply={x} enableVotes>
-                <RecursiveReply />
-              </Reply.Root>
+    <AnythreadsPersonalization.Provider instance={at} accountId="account_1">
+      <div style={{ display: "flex" }}>
+        <div style={{ width: "33%" }}>
+          {msg?.kind === "some" &&
+            msg.value.map((thread) => (
+              <Thread.Root key={thread.id} thread={thread}>
+                <button
+                  type="button"
+                  onClick={() => handleClickToPick(thread.id)}
+                >
+                  <Thread.Title />
+                </button>
+                <Thread.Body />
+              </Thread.Root>
             ))}
-          <form onSubmit={submitReply}>
-            <textarea name="body" rows={3} />
-            <button type="submit">reply</button>
-          </form>
-        </Thread.Root>
-      )}
-    </div>
-  );
-}
-
-function RecursiveReply() {
-  const reply = Reply.useReply();
-  return (
-    <div style={{ padding: "1rem", textAlign: "left" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <span>-</span>
-          <Account.Root account={reply.account}>
-            <Account.Username />
-          </Account.Root>
-          <Reply.CreatedAt />
         </div>
-        <Reply.Body />
-        <VoteButtons />
+
+        {complete.kind === "some" && (
+          <div
+            style={{ width: "66%", display: "flex", flexDirection: "column" }}
+          >
+            <Thread.Root thread={complete.value.thread}>
+              <ThreadPersonalization.Provider
+                threadPersonalized={threadPersonalized.value}
+              >
+                <Thread.Title />
+                {complete.value.replies.map((reply) => (
+                  <RecursiveReply key={reply.id} reply={reply} />
+                ))}
+              </ThreadPersonalization.Provider>
+            </Thread.Root>
+          </div>
+        )}
       </div>
-      {reply.replies?.map((x) => (
-        <Reply.Root key={x.id} reply={x} enableVotes>
-          <RecursiveReply />
-        </Reply.Root>
-      ))}
-    </div>
+    </AnythreadsPersonalization.Provider>
   );
 }
 
-function VoteButtons() {
-  const v = Vote.useVote();
+function RecursiveReply({ reply }: { reply: ReplyWithNested }) {
   return (
-    <div style={{ display: "flex", gap: "0.5rem" }}>
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          opacity: v.currentUserDirection === "up" ? "0.2" : "1",
-        }}
-      >
-        <Vote.UpvoteCount />
-        <Vote.UpvoteButton>↑</Vote.UpvoteButton>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          opacity: v.currentUserDirection === "down" ? "0.2" : "1",
-        }}
-      >
-        <Vote.DownvoteButton>↓</Vote.DownvoteButton>
-        <Vote.DownvoteCount />
-      </div>
-    </div>
+    <Reply.Root reply={reply} className="reply">
+      <Account.Root account={reply.account} className="account-block">
+        <Account.Username />
+        <Reply.CreatedAt />
+      </Account.Root>
+      <Reply.Body />
+      <Vote.Root vote={reply.voteCount} className="votes-block">
+        <Reply.SubmitUpvote>up</Reply.SubmitUpvote>
+        <Vote.Total />
+        <Reply.SubmitDownvote>down</Reply.SubmitDownvote>
+      </Vote.Root>
+      {reply.replies.map((reply) => (
+        <RecursiveReply key={reply.id} reply={reply} />
+      ))}
+    </Reply.Root>
   );
 }
-
-export default App;
-
-const styles = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "1rem",
-  },
-  flexCol: {
-    display: "flex",
-    flexDirection: "column" as any,
-    alignItems: "flex-start",
-    gap: "1rem",
-    padding: "1rem",
-  },
-};

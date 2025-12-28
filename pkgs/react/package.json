@@ -1,0 +1,29 @@
+{
+	"name": "@anythreads/react",
+	"type": "module",
+	"module": "index.ts",
+	"exports": {
+		".": {
+			"default": "./v1/index.ts"
+		},
+		"./server": {
+			"default": "./v1/server.ts"
+		},
+		"./browser": {
+			"default": "./v1/browser.ts"
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
+		"@types/bun": "latest",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"tsup": "^8.5.1"
+	},
+	"peerDependencies": {
+		"react": "^18.0.0 || ^19.0.0",
+		"react-dom": "^18.0.0 || ^19.0.0",
+		"@anythreads/api": "workspace:*",
+		"typescript": "^5"
+	}
+}

@@ -1,0 +1,21 @@
+{
+  "name": "anythreads-monorepo",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "concurrently": "^9.2.1"
+  },
+  "private": true,
+  "scripts": {
+    "install:all": "bun install",
+    "dev:docs": "bun --cwd docs-site dev",
+    "dev:hono": "bun --cwd examples/api-ts-hono dev",
+    "dev:vite": "bun --cwd examples/vite-react dev",
+    "dev:waku": "bun --cwd examples/waku-react dev",
+    "dev:honovite": "concurrently \"bun dev:hono\" \"bun dev:vite\""
+  },
+  "workspaces": [
+    "pkgs/*",
+    "examples/*",
+    "docs-site"
+  ]
+}

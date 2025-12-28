@@ -1,5 +1,19 @@
 @scope (.reply) {
-	.thing {
-		color: red;
+	.reply {
+		padding-left: 1rem;
+	}
+	.account-block {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 1.25rem;
+	}
+	.votes-block {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.8rem;
 	}
 }

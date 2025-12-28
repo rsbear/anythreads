@@ -1,0 +1,65 @@
+{
+	"name": "@anythreads/api",
+	"version": "0.0.1",
+	"type": "module",
+	"private": true,
+	"exports": {
+		".": {
+			"types": "./src/mod.ts",
+			"default": "./src/mod.ts"
+		},
+		"./accounts": {
+			"types": "./src/adapters/adapter-accounts.ts",
+			"default": "./api/adapters/adapter-accounts.ts"
+		},
+		"./replies": {
+			"types": "./api/adapters/adapter-replies.ts",
+			"default": "./api/adapters/adapter-replies.ts"
+		},
+		"./threads": {
+			"types": "./src/adapters/adapter-threads.ts",
+			"default": "./src/adapters/adapter-threads.ts"
+		},
+		"./votes": {
+			"types": "./src/adapters/adapter-votes.ts",
+			"default": "./src/adapters/adapter-votes.ts"
+		},
+		"./cli": {
+			"types": "./src/cli/mod.ts",
+			"bin": "./src/cli/index.ts",
+			"default": "./src/cli/mod.ts"
+		},
+		"./webrequests": {
+			"types": "./src/webrequests/mod.ts",
+			"default": "./src/webrequests/mod.ts"
+		},
+		"./msg": {
+			"types": "./src/common/msg.ts",
+			"default": "./src/common/msg.ts"
+		}
+	},
+	"bin": {
+		"@anythreads/api": "./cli/index.ts"
+	},
+	"files": [
+		"api",
+		"cli"
+	],
+	"scripts": {
+		"build": "bun build:types",
+		"build:types": "tsc --emitDeclarationOnly --declaration --outDir dist"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
+		"@types/bun": "latest",
+		"better-sqlite3": "^12.5.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"effect": "^3.19.13",
+		"gunshi": "^0.27.3",
+		"nanoid": "^5.1.6"
+	}
+}

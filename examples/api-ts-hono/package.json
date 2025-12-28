@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "hono": "^4.11.1",
-    "@anythreads/api": "link:@anythreads/api"
+    "@anythreads/api": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest"

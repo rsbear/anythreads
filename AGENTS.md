@@ -4,25 +4,25 @@
 
 ```bash
 # Run tests
-cd api-ts && bun test                    # All tests
-cd api-ts && bun test <pattern>          # Specific test file(s)
-cd api-ts && bun test -t <pattern>       # Tests matching name pattern
+cd pkgs/api-ts && bun test                    # All tests
+cd pkgs/api-ts && bun test <pattern>          # Specific test file(s)
+cd pkgs/api-ts && bun test -t <pattern>       # Tests matching name pattern
 
 # Build & Type Check
-cd api-ts && bun run build               # Build types (tsc --emitDeclarationOnly)
+cd pkgs/api-ts && bun run build               # Build types (tsc --emitDeclarationOnly)
 
 # Lint & Format
-cd api-ts && bunx biome check .          # Check formatting and lint
-cd api-ts && bunx biome check --write .  # Auto-fix issues
+cd pkgs/api-ts && bunx biome check .          # Check formatting and lint
+cd pkgs/api-ts && bunx biome check --write .  # Auto-fix issues
 ```
 
 ## Code Style
 
 - **Formatter**: Biome (100 char line width, 2 spaces, double quotes)
-- **Types**: Full TypeScript with explicit types, use `Result<T>` for error handling (see `api/utils/result.ts`)
+- **Types**: Full TypeScript with explicit types, use `Msg<T>` for error handling (see `api/common/msg.ts`)
 - **Imports**: Auto-organize via Biome, use relative paths for local files
 - **Naming**: camelCase for functions/variables, PascalCase for types/classes/interfaces
-- **Error Handling**: Return `Result<T>` (resultOk/resultErr), console.log errors with tags
+- **Error Handling**: Return `Msg<T>` (none/some/err), console.log errors with tags
 - **Async**: Mark functions `async` even if they return synchronous Results
 - **Database**: Use prepared statements, map DB rows via DTOs (see `adapters/dtos.ts`)
 - **No comments**: Code should be self-documenting
@@ -36,7 +36,6 @@ bd ready              # Find available work
 bd show <id>          # View issue details
 bd update <id> --status in_progress  # Claim work
 bd close <id>         # Complete work
-bd sync               # Sync with git
 ```
 
 ## Landing the Plane (Session Completion)
