@@ -1,11 +1,20 @@
+import { createAnythreads } from "@anythreads/api";
 import type { ReplyWithNested } from "@anythreads/api/threads";
 import { Account, Reply, Thread, Vote } from "@anythreads/react";
 import {
   AnythreadsPersonalization,
   ThreadPersonalization,
 } from "@anythreads/react/server";
+import { createClient } from "@libsql/client";
 import { Link } from "waku";
-import { anythreads } from "../anythreads";
+
+const client = createClient({ url: "file:test.sqlite" });
+
+export const anythreads = createAnythreads({
+  adapter: {
+    libsql: client,
+  },
+});
 
 export default async function HomePage({ id }) {
   const msg = await anythreads.threads.findMany();
