@@ -38,7 +38,7 @@ export default async function HomePage({ id }) {
 
 async function ThreadIdSlice({ id }) {
   const msg = await anythreads.threads.complete(id);
-  const tp = await anythreads.accounts.votesInThread({
+  const tp = await anythreads.accounts.personalizedThread({
     threadId: id,
     accountId: "account_1",
   });

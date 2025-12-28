@@ -47,7 +47,7 @@ export default function App() {
   async function handleClickToPick(id: string) {
     at.threads.complete(id).then(picked.set);
     at.accounts
-      .votesInThread({
+      .personalizedThread({
         threadId: id,
         accountId: "account_1",
       })
