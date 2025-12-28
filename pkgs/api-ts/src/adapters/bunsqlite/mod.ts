@@ -6,10 +6,10 @@ import { BunSQLiteThreadsAdapter } from "./threads";
 import { BunSQLiteVotesAdapter } from "./votes";
 
 export function createBunSQLiteAdapter(db: Database): Anythreads {
-  return {
-    threads: new BunSQLiteThreadsAdapter(db),
-    accounts: new BunSQLiteAccountsAdapter(db),
-    replies: new BunSQLiteRepliesAdapter(db),
-    votes: new BunSQLiteVotesAdapter(db),
-  };
+	return {
+		threads: new BunSQLiteThreadsAdapter(db),
+		accounts: new BunSQLiteAccountsAdapter(db),
+		replies: new BunSQLiteRepliesAdapter(db),
+		votes: new BunSQLiteVotesAdapter(db),
+	};
 }

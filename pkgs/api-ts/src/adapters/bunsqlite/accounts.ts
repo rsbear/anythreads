@@ -7,8 +7,8 @@ import type {
 	AccountsDataAdapter,
 	AccountsFindManyOptions,
 	AccountUpdate,
-	VotesInThread,
-	VotesInThreadInput,
+	PersonalizedThread,
+	PersonalizedThreadInput,
 } from "./../adapter-accounts.ts";
 import { mapDbToAccount } from "../maps.ts";
 
@@ -241,8 +241,8 @@ export class BunSQLiteAccountsAdapter implements AccountsDataAdapter {
 	}
 
 	public async personalizedThread(
-		opts: VotesInThreadInput,
-	): Promise<Msg<VotesInThread>> {
+		opts: PersonalizedThreadInput,
+	): Promise<Msg<PersonalizedThread>> {
 		const { accountId, threadId } = opts;
 		try {
 			const votes = this.db
@@ -264,7 +264,7 @@ export class BunSQLiteAccountsAdapter implements AccountsDataAdapter {
 				direction: string;
 			}>;
 
-			const voteHash: VotesInThread = {};
+			const voteHash: PersonalizedThread = {};
 			for (const vote of votes) {
 				const key = vote.reply_id
 					? `reply:${vote.reply_id}`

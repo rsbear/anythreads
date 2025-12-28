@@ -4,13 +4,13 @@
 	"module": "index.ts",
 	"exports": {
 		".": {
-			"default": "./v1/index.ts"
+			"default": "./src/index.ts"
 		},
 		"./server": {
-			"default": "./v1/server.ts"
+			"default": "./src/server.ts"
 		},
 		"./browser": {
-			"default": "./v1/browser.ts"
+			"default": "./src/browser.ts"
 		}
 	},
 	"devDependencies": {

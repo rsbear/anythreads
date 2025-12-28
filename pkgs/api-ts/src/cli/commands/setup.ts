@@ -1,8 +1,8 @@
 import {
-  createAccountsStr,
-  createRepliesStr,
-  createThreadsStr,
-  createVotesStr,
+	createAccountsStr,
+	createRepliesStr,
+	createThreadsStr,
+	createVotesStr,
 } from "../../common/create-tables/sqlite.ts";
 import type { Command } from "../core/executor.ts";
 
@@ -10,14 +10,14 @@ const TABLES = ["accounts", "threads", "replies", "votes"] as const;
 type TableName = (typeof TABLES)[number];
 
 const TABLE_SCHEMAS_SQLITE: Record<TableName, string> = {
-  accounts: createAccountsStr,
-  threads: createThreadsStr,
-  replies: createRepliesStr,
-  votes: createVotesStr,
+	accounts: createAccountsStr,
+	threads: createThreadsStr,
+	replies: createRepliesStr,
+	votes: createVotesStr,
 };
 
 const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
-  accounts: `
+	accounts: `
     CREATE TABLE IF NOT EXISTS accounts (
       id TEXT PRIMARY KEY,
       upstream_id TEXT NOT NULL,
@@ -33,7 +33,7 @@ const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
       extras JSONB NOT NULL DEFAULT '{}'
     )
   `,
-  threads: `
+	threads: `
     CREATE TABLE IF NOT EXISTS threads (
       id TEXT PRIMARY KEY,
       account_id TEXT NOT NULL,
@@ -48,7 +48,7 @@ const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
       FOREIGN KEY (account_id) REFERENCES accounts(id)
     )
   `,
-  replies: `
+	replies: `
     CREATE TABLE IF NOT EXISTS replies (
       id TEXT PRIMARY KEY,
       thread_id TEXT NOT NULL,
@@ -64,7 +64,7 @@ const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
       FOREIGN KEY (reply_to_id) REFERENCES replies(id)
     )
   `,
-  votes: `
+	votes: `
     CREATE TABLE IF NOT EXISTS votes (
       id TEXT PRIMARY KEY,
       thread_id TEXT,
@@ -82,71 +82,75 @@ const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
 };
 
 const TABLE_INDEXES: Record<TableName, string[]> = {
-  accounts: [],
-  threads: ["CREATE INDEX IF NOT EXISTS idx_threads_account_id ON threads(account_id)"],
-  replies: [
-    "CREATE INDEX IF NOT EXISTS idx_replies_thread_id ON replies(thread_id)",
-    "CREATE INDEX IF NOT EXISTS idx_replies_reply_to_id ON replies(reply_to_id)",
-    "CREATE INDEX IF NOT EXISTS idx_replies_account_id ON replies(account_id)",
-  ],
-  votes: [
-    "CREATE INDEX IF NOT EXISTS idx_votes_thread_id ON votes(thread_id)",
-    "CREATE INDEX IF NOT EXISTS idx_votes_reply_id ON votes(reply_id)",
-    "CREATE INDEX IF NOT EXISTS idx_votes_account_id ON votes(account_id)",
-  ],
+	accounts: [],
+	threads: [
+		"CREATE INDEX IF NOT EXISTS idx_threads_account_id ON threads(account_id)",
+	],
+	replies: [
+		"CREATE INDEX IF NOT EXISTS idx_replies_thread_id ON replies(thread_id)",
+		"CREATE INDEX IF NOT EXISTS idx_replies_reply_to_id ON replies(reply_to_id)",
+		"CREATE INDEX IF NOT EXISTS idx_replies_account_id ON replies(account_id)",
+	],
+	votes: [
+		"CREATE INDEX IF NOT EXISTS idx_votes_thread_id ON votes(thread_id)",
+		"CREATE INDEX IF NOT EXISTS idx_votes_reply_id ON votes(reply_id)",
+		"CREATE INDEX IF NOT EXISTS idx_votes_account_id ON votes(account_id)",
+	],
 };
 
 async function setupTable(
-  db: any,
-  dbType: "bun_sqlite" | "sqlite3" | "postgres",
-  table: TableName,
+	db: any,
+	dbType: "bun_sqlite" | "sqlite3" | "postgres",
+	table: TableName,
 ): Promise<void> {
-  console.log(`Setting up ${table} table...`);
+	console.log(`Setting up ${table} table...`);
 
-  const schema =
-    dbType === "bun_sqlite" || dbType === "sqlite3"
-      ? TABLE_SCHEMAS_SQLITE[table]
-      : TABLE_SCHEMAS_POSTGRES[table];
+	const schema =
+		dbType === "bun_sqlite" || dbType === "sqlite3"
+			? TABLE_SCHEMAS_SQLITE[table]
+			: TABLE_SCHEMAS_POSTGRES[table];
 
-  if (dbType === "bun_sqlite" || dbType === "sqlite3") {
-    db.run(schema);
-    for (const indexSql of TABLE_INDEXES[table]) {
-      db.run(indexSql);
-    }
-  } else {
-    await db.query(schema);
-    for (const indexSql of TABLE_INDEXES[table]) {
-      await db.query(indexSql);
-    }
-  }
+	if (dbType === "bun_sqlite" || dbType === "sqlite3") {
+		db.run(schema);
+		for (const indexSql of TABLE_INDEXES[table]) {
+			db.run(indexSql);
+		}
+	} else {
+		await db.query(schema);
+		for (const indexSql of TABLE_INDEXES[table]) {
+			await db.query(indexSql);
+		}
+	}
 
-  if (TABLE_INDEXES[table].length > 0) {
-    console.log(`Created ${TABLE_INDEXES[table].length} index(es) for ${table}`);
-  }
+	if (TABLE_INDEXES[table].length > 0) {
+		console.log(
+			`Created ${TABLE_INDEXES[table].length} index(es) for ${table}`,
+		);
+	}
 }
 
 export const setupCommand: Command = {
-  name: "setup",
-  description: "Create tables, indexes, and run migrations",
-  handler: async (config, args) => {
-    const target = args[0];
+	name: "setup",
+	description: "Create tables, indexes, and run migrations",
+	handler: async (config, args) => {
+		const target = args[0];
 
-    if (!target) {
-      throw new Error("Usage: setup <accounts|threads|replies|votes|all>");
-    }
+		if (!target) {
+			throw new Error("Usage: setup <accounts|threads|replies|votes|all>");
+		}
 
-    if (target === "all") {
-      for (const table of TABLES) {
-        await setupTable(config.db, config.dbType, table);
-      }
-      console.log("All tables set up successfully");
-    } else if (TABLES.includes(target as TableName)) {
-      await setupTable(config.db, config.dbType, target as TableName);
-      console.log(`${target} table set up successfully`);
-    } else {
-      throw new Error(
-        `Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`,
-      );
-    }
-  },
+		if (target === "all") {
+			for (const table of TABLES) {
+				await setupTable(config.db, config.dbType, table);
+			}
+			console.log("All tables set up successfully");
+		} else if (TABLES.includes(target as TableName)) {
+			await setupTable(config.db, config.dbType, target as TableName);
+			console.log(`${target} table set up successfully`);
+		} else {
+			throw new Error(
+				`Unknown table: ${target}. Must be one of: ${TABLES.join(", ")}, all`,
+			);
+		}
+	},
 };

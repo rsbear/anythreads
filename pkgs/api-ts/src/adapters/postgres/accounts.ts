@@ -6,8 +6,8 @@ import type {
 	AccountsDataAdapter,
 	AccountsFindManyOptions,
 	AccountUpdate,
-	VotesInThread,
-	VotesInThreadInput,
+	PersonalizedThread,
+	PersonalizedThreadInput,
 } from "../adapter-accounts.ts";
 import { mapDbToAccount } from "../maps.ts";
 
@@ -278,8 +278,8 @@ export class PostgresAccountsAdapter implements AccountsDataAdapter {
 	}
 
 	public async personalizedThread(
-		opts: VotesInThreadInput,
-	): Promise<Msg<VotesInThread>> {
+		opts: PersonalizedThreadInput,
+	): Promise<Msg<PersonalizedThread>> {
 		const { accountId, threadId } = opts;
 		try {
 			const result = await this.db.query(
@@ -295,7 +295,7 @@ export class PostgresAccountsAdapter implements AccountsDataAdapter {
 				[threadId, accountId],
 			);
 
-			const voteHash: VotesInThread = {};
+			const voteHash: PersonalizedThread = {};
 			for (const vote of result.rows) {
 				const key = vote.reply_id
 					? `reply:${vote.reply_id}`

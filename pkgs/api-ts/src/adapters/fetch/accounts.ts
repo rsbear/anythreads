@@ -7,8 +7,8 @@ import type {
 	AccountsDataAdapter,
 	AccountsFindManyOptions,
 	AccountUpdate,
-	VotesInThread,
-	VotesInThreadInput,
+	PersonalizedThread,
+	PersonalizedThreadInput,
 } from "../adapter-accounts.ts";
 
 export class FetchAccountsAdapter implements AccountsDataAdapter {
@@ -65,9 +65,9 @@ export class FetchAccountsAdapter implements AccountsDataAdapter {
 	}
 
 	async personalizedThread(
-		opts: VotesInThreadInput,
-	): Promise<Msg<VotesInThread>> {
-		return fetchRequest<VotesInThread>(
+		opts: PersonalizedThreadInput,
+	): Promise<Msg<PersonalizedThread>> {
+		return fetchRequest<PersonalizedThread>(
 			this.config,
 			`/accounts/${opts.accountId}/threads/${opts.threadId}/votes`,
 		);

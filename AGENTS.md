@@ -1,129 +1,143 @@
 # Agent Instructions
 
-## Build, Test & Lint Commands
+## Workflow Overview
 
-```bash
-# Run tests
-cd pkgs/api-ts && bun test                    # All tests
-cd pkgs/api-ts && bun test <pattern>          # Specific test file(s)
-cd pkgs/api-ts && bun test -t <pattern>       # Tests matching name pattern
+When you start a session, follow this pattern:
 
-# Build & Type Check
-cd pkgs/api-ts && bun run build               # Build types (tsc --emitDeclarationOnly)
-
-# Lint & Format
-cd pkgs/api-ts && bunx biome check .          # Check formatting and lint
-cd pkgs/api-ts && bunx biome check --write .  # Auto-fix issues
-```
-
-## Code Style
-
-- **Formatter**: Biome (100 char line width, 2 spaces, double quotes)
-- **Types**: Full TypeScript with explicit types, use `Msg<T>` for error handling (see `api/common/msg.ts`)
-- **Imports**: Auto-organize via Biome, use relative paths for local files
-- **Naming**: camelCase for functions/variables, PascalCase for types/classes/interfaces
-- **Error Handling**: Return `Msg<T>` (none/some/err), console.log errors with tags
-- **Async**: Mark functions `async` even if they return synchronous Results
-- **Database**: Use prepared statements, map DB rows via DTOs (see `adapters/dtos.ts`)
-- **No comments**: Code should be self-documenting
-
-## Issue Tracking
-
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-```
-
-## Landing the Plane (Session Completion)
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-
-
-<!-- bv-agent-instructions-v1 -->
+1. **Task Selection** - Find or create a task
+2. **Implementation** - Make code changes
+3. **Testing** - Run tests, create new ones if needed
+4. **Commit & Push** - Land changes with proper git workflow
 
 ---
 
-## Beads Workflow Integration
+## 1. Task Management with Beads
 
-This project uses [beads_viewer](https://github.com/Dicklesworthstone/beads_viewer) for issue tracking. Issues are stored in `.beads/` and tracked in git.
-
-### Essential Commands
-
+### Find Work
 ```bash
-# View issues (launches TUI - avoid in automated sessions)
-bv
+bd ready              # Show unblocked tasks ready to work
+bd show <id>          # View task details
+```
 
-# CLI commands for agents (use these instead)
-bd ready              # Show issues ready to work (no blockers)
-bd list --status=open # All open issues
-bd show <id>          # Full issue details with dependencies
-bd create --title="..." --type=task --priority=2
+### Create New Task
+When user requests new work:
+```bash
+bd create --title="Short description" --type=task --priority=2
+```
+
+**Task Types**: task, bug, feature, epic, question, docs  
+**Priority**: P0=critical, P1=high, P2=medium, P3=low, P4=backlog (use numbers)
+
+### Claim Task
+```bash
 bd update <id> --status=in_progress
-bd close <id> --reason="Completed"
-bd close <id1> <id2>  # Close multiple issues at once
-bd sync               # Commit and push changes
 ```
 
-### Workflow Pattern
+---
 
-1. **Start**: Run `bd ready` to find actionable work
-2. **Claim**: Use `bd update <id> --status=in_progress`
-3. **Work**: Implement the task
-4. **Complete**: Use `bd close <id>`
-5. **Sync**: Always run `bd sync` at session end
+## 2. Code Implementation
 
-### Key Concepts
+### Test Scope
+**We only test API surfaces in:**
+- `pkgs/api-ts` - All public API functions
+- `pkgs/react` - All exported React components and hooks
 
-- **Dependencies**: Issues can block other issues. `bd ready` shows only unblocked work.
-- **Priority**: P0=critical, P1=high, P2=medium, P3=low, P4=backlog (use numbers, not words)
-- **Types**: task, bug, feature, epic, question, docs
-- **Blocking**: `bd dep add <issue> <depends-on>` to add dependencies
+### Code Style
+- **Formatter**: Biome (100 char line width, 2 spaces, double quotes)
+- **Types**: Full TypeScript with explicit types
+- **Error Handling**: Return `Msg<T>` (none/some/err), log errors with tags. Never throw.
+- **Imports**: Relative paths for local files
+- **Naming**: camelCase for functions/variables, PascalCase for types/interfaces
+- **Comments**: JSDocs for API surface functions only
 
-### Session Protocol
+---
 
-**Before ending any session, run this checklist:**
+## 3. Testing Protocol
+
+### Run Tests
+```bash
+cd pkgs/api-ts && bun test                    # All api-ts tests
+cd pkgs/api-ts && bun test <pattern>          # Specific test file(s)
+cd pkgs/api-ts && bun test -t <pattern>       # Tests matching name
+
+cd pkgs/react && bun test                     # All react tests (when applicable)
+```
+
+### When Tests Fail
+1. Fix the code
+2. Re-run tests
+3. Repeat until green
+
+### When Tests Don't Exist
+If changing API surface with no test coverage:
+1. **ASK USER**: "This API has no test coverage. Should I create tests?"
+2. If YES: Write tests following existing patterns in `src/_tests/`
+3. Run tests to verify
+
+### Quality Gates
+```bash
+cd pkgs/api-ts && bunx biome check --write .  # Format and lint
+cd pkgs/api-ts && bun run build               # Type check
+cd pkgs/api-ts && bun test                    # Run all tests
+```
+
+---
+
+## 4. Commit & Push Protocol
+
+### Complete Task
+```bash
+bd close <id>                                 # Mark task done
+```
+
+### Commit Changes
+```bash
+git status                                    # Review changes
+git add <files>                               # Stage code changes
+git commit -m "Clear, descriptive message"    # Commit code
+bd sync                                       # Sync beads metadata
+git pull --rebase                             # Get latest changes
+git push                                      # Push to remote
+git status                                    # Verify "up to date with origin"
+```
+
+### Commit Message Style
+- Be specific and descriptive
+- Focus on what and why
+- Examples:
+  - ✅ "Add pagination support to thread queries"
+  - ✅ "Fix vote count race condition in postgres adapter"
+  - ❌ "Update code"
+  - ❌ "Fix bug"
+
+---
+
+## 5. Session Completion Checklist
+
+Before ending ANY session:
+
+- [ ] All tests passing
+- [ ] Code formatted (`biome check --write`)
+- [ ] Types checked (`bun run build`)
+- [ ] Task closed in beads (`bd close <id>`)
+- [ ] Changes committed to git
+- [ ] Beads synced (`bd sync`)
+- [ ] Changes pushed to remote (`git push`)
+- [ ] Git status shows "up to date with origin"
+
+**CRITICAL**: Work is not complete until `git push` succeeds.
+
+---
+
+## Quick Reference
 
 ```bash
-git status              # Check what changed
-git add <files>         # Stage code changes
-bd sync                 # Commit beads changes
-git commit -m "..."     # Commit code
-bd sync                 # Commit any new beads changes
-git push                # Push to remote
+# Task workflow
+bd ready → bd update <id> --status=in_progress → [work] → bd close <id>
+
+# Test workflow (pkgs/api-ts)
+bun test → [fix if needed] → bun test → [repeat until green]
+
+# Commit workflow
+git add . → git commit -m "..." → bd sync → git pull --rebase → git push
 ```
-
-### Best Practices
-
-- Check `bd ready` at session start to find available work
-- Update status as you work (in_progress → closed)
-- Create new issues with `bd create` when you discover tasks
-- Use descriptive titles and set appropriate priority/type
-- Always `bd sync` before ending session
-
-<!-- end-bv-agent-instructions -->

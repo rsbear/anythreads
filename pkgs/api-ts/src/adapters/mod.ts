@@ -8,8 +8,8 @@ import type { VotesDataAdapter } from "./adapter-votes.ts";
  * This interface defines the methods that must be implemented by the adapter.
  */
 export interface Anythreads {
-  accounts: AccountsDataAdapter;
-  threads: ThreadsDataAdapter;
-  replies: RepliesDataAdapter;
-  votes: VotesDataAdapter;
+	accounts: AccountsDataAdapter;
+	threads: ThreadsDataAdapter;
+	replies: RepliesDataAdapter;
+	votes: VotesDataAdapter;
 }

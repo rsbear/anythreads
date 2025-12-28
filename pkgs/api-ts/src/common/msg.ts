@@ -20,9 +20,9 @@ type MaybeNone = { kind: "none"; value: Reason };
 export type Msg<T> = MaybeSome<T> | MaybeNone | ResultErr;
 
 const MsgKinds = {
-  Err: "err",
-  Some: "some",
-  None: "none",
+	Err: "err",
+	Some: "some",
+	None: "none",
 } as const;
 
 /**
@@ -33,7 +33,7 @@ const MsgKinds = {
  * @returns A `Result` that represents an `Err` value.
  */
 export function err(msg: string, metadata?: Record<string, any>): ResultErr {
-  return { kind: MsgKinds.Err, value: { msg, metadata } };
+	return { kind: MsgKinds.Err, value: { msg, metadata } };
 }
 
 /**
@@ -50,7 +50,7 @@ export function err(msg: string, metadata?: Record<string, any>): ResultErr {
  * Helper function 'isSome()' for narrowing the type of the `Maybe` to a `Some` value
  */
 export function some<T>(value: T): MaybeSome<T> {
-  return { kind: MsgKinds.Some, value };
+	return { kind: MsgKinds.Some, value };
 }
 
 /**
@@ -67,7 +67,7 @@ export function some<T>(value: T): MaybeSome<T> {
  * Helper function 'isNone()' for narrowing the type of the `Maybe` to a `None` value
  */
 export function none(reason?: string): MaybeNone {
-  return { kind: MsgKinds.None, value: !reason ? null : { reason } };
+	return { kind: MsgKinds.None, value: !reason ? null : { reason } };
 }
 
 /**
@@ -84,7 +84,8 @@ export const isErr = <T>(x: Msg<T>): x is ResultErr => x.kind === MsgKinds.Err;
  * @param x - The `Maybe` to check.
  * @returns `true` if the `Maybe` is a `Some` value, `false` otherwise.
  */
-export const isSome = <T>(x: Msg<T>): x is MaybeSome<T> => x.kind === MsgKinds.Some;
+export const isSome = <T>(x: Msg<T>): x is MaybeSome<T> =>
+	x.kind === MsgKinds.Some;
 
 /**
  * Check if a `Maybe` is a `None` value.
@@ -92,4 +93,5 @@ export const isSome = <T>(x: Msg<T>): x is MaybeSome<T> => x.kind === MsgKinds.S
  * @param x - The `Maybe` to check.
  * @returns `true` if the `Maybe` is a `None` value, `false` otherwise.
  */
-export const isNone = <T>(x: Msg<T>): x is MaybeNone => x.kind === MsgKinds.None;
+export const isNone = <T>(x: Msg<T>): x is MaybeNone =>
+	x.kind === MsgKinds.None;

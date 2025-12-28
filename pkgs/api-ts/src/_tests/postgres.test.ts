@@ -3,13 +3,13 @@ import { setupAnythreads } from "../cli.ts";
 import { fullCoverageTest } from "./full-coverage.ts";
 
 describe("Postgres Adapter - Full Coverage", () => {
-  const mockPostgres = {
-    query: async () => {
-      return { rows: [] };
-    },
-  };
+	const mockPostgres = {
+		query: async () => {
+			return { rows: [] };
+		},
+	};
 
-  const setup = setupAnythreads({ postgres: mockPostgres });
+	const setup = setupAnythreads({ postgres: mockPostgres });
 
-  fullCoverageTest(setup);
+	fullCoverageTest(setup);
 });

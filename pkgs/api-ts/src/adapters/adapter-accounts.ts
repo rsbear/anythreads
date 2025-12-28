@@ -9,7 +9,7 @@ export interface AccountsDataAdapter {
 	unban: (id: string) => Promise<Msg<Account>>;
 	findOne: (id: string) => Promise<Msg<Account>>;
 	findMany: (opts: AccountsFindManyOptions) => Promise<Msg<Account[]>>;
-	personalizedThread: (opts: VotesInThreadInput) => Promise<Msg<VotesInThread>>;
+	personalizedThread: (opts: PersonalizedThreadInput) => Promise<Msg<PersonalizedThread>>;
 }
 
 /**
@@ -63,9 +63,9 @@ export type AccountsFindManyOptions = {
 	offset?: number;
 };
 
-export type VotesInThreadInput = {
+export type PersonalizedThreadInput = {
 	accountId: string;
 	threadId: string;
 };
 
-export type VotesInThread = Record<string, Partial<Vote>>;
+export type PersonalizedThread = Record<string, Partial<Vote>>;

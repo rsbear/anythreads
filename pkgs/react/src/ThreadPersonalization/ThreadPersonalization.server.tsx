@@ -1,4 +1,4 @@
-import type { VotesInThread } from "@anythreads/api/accounts";
+import type { PersonalizedThread } from "@anythreads/api/accounts";
 import type { PropsWithChildren } from "react";
 import { cache } from "react";
 import type { ThreadPersonalizationContext } from "./types";
@@ -19,7 +19,7 @@ export function useThreadPersonalization() {
 export function Provider({
   children,
   msg,
-}: PropsWithChildren<{ msg: Msg<VotesInThread> }>) {
+}: PropsWithChildren<{ msg: Msg<PersonalizedThread> }>) {
   const ctx = getThreadPersonalizationCtx();
   ctx.msg = msg;
   return <>{children}</>;

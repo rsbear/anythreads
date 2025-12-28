@@ -1,173 +1,173 @@
 {
-  "accounts": [
-    {
-      "id": "account_1",
-      "upstreamId": "upstream_1",
-      "username": "alice",
-      "email": "alice@example.com",
-      "badge": "moderator"
-    },
-    {
-      "id": "account_2",
-      "upstreamId": "upstream_2",
-      "username": "bob",
-      "email": "bob@example.com",
-      "badge": null
-    },
-    {
-      "id": "account_3",
-      "upstreamId": "upstream_3",
-      "username": "charlie",
-      "email": "charlie@example.com",
-      "badge": "contributor"
-    }
-  ],
-  "threads": [
-    {
-      "id": "thread_1",
-      "accountId": "account_1",
-      "upstreamId": "upstream_thread_1",
-      "title": "Welcome to Anythreads!",
-      "body": "This is the first thread in our community. Feel free to share your thoughts!",
-      "allowReplies": true
-    },
-    {
-      "id": "thread_2",
-      "accountId": "account_2",
-      "upstreamId": "upstream_thread_2",
-      "title": "Feature Discussion",
-      "body": "What features would you like to see next?",
-      "allowReplies": true
-    }
-  ],
-  "replies": [
-    {
-      "id": "reply_1",
-      "threadId": "thread_1",
-      "accountId": "account_2",
-      "body": "Great to be here!",
-      "replyToId": null
-    },
-    {
-      "id": "reply_2",
-      "threadId": "thread_1",
-      "accountId": "account_3",
-      "body": "Thanks for the warm welcome!",
-      "replyToId": null
-    },
-    {
-      "id": "reply_3",
-      "threadId": "thread_1",
-      "accountId": "account_1",
-      "body": "Glad to have you both!",
-      "replyToId": "reply_1"
-    },
-    {
-      "id": "reply_4",
-      "threadId": "thread_2",
-      "accountId": "account_1",
-      "body": "I'd love to see better notification support",
-      "replyToId": null
-    },
-    {
-      "id": "reply_5",
-      "threadId": "thread_2",
-      "accountId": "account_3",
-      "body": "Dark mode would be nice",
-      "replyToId": null
-    },
-    {
-      "id": "reply_6",
-      "threadId": "thread_2",
-      "accountId": "account_2",
-      "body": "Both great suggestions!",
-      "replyToId": "reply_4"
-    },
-    {
-      "id": "reply_7",
-      "threadId": "thread_1",
-      "accountId": "account_2",
-      "body": "Looking forward to participating more",
-      "replyToId": "reply_3"
-    },
-    {
-      "id": "reply_8",
-      "threadId": "thread_2",
-      "accountId": "account_1",
-      "body": "We're considering all of these!",
-      "replyToId": "reply_5"
-    }
-  ],
-  "votes": [
-    {
-      "id": "vote_1",
-      "threadId": "thread_1",
-      "accountId": "account_2",
-      "replyId": null,
-      "direction": "up"
-    },
-    {
-      "id": "vote_2",
-      "threadId": "thread_1",
-      "accountId": "account_3",
-      "replyId": null,
-      "direction": "up"
-    },
-    {
-      "id": "vote_3",
-      "threadId": "thread_2",
-      "accountId": "account_1",
-      "replyId": null,
-      "direction": "up"
-    },
-    {
-      "id": "vote_4",
-      "threadId": "thread_2",
-      "accountId": "account_3",
-      "replyId": null,
-      "direction": "up"
-    },
-    {
-      "id": "vote_5",
-      "threadId": "thread_1",
-      "accountId": "account_1",
-      "replyId": "reply_1",
-      "direction": "up"
-    },
-    {
-      "id": "vote_6",
-      "threadId": "thread_1",
-      "accountId": "account_3",
-      "replyId": "reply_2",
-      "direction": "up"
-    },
-    {
-      "id": "vote_7",
-      "threadId": "thread_2",
-      "accountId": "account_2",
-      "replyId": "reply_4",
-      "direction": "up"
-    },
-    {
-      "id": "vote_8",
-      "threadId": "thread_2",
-      "accountId": "account_1",
-      "replyId": "reply_5",
-      "direction": "up"
-    },
-    {
-      "id": "vote_9",
-      "threadId": "thread_1",
-      "accountId": "account_2",
-      "replyId": "reply_3",
-      "direction": "up"
-    },
-    {
-      "id": "vote_10",
-      "threadId": "thread_2",
-      "accountId": "account_3",
-      "replyId": "reply_6",
-      "direction": "up"
-    }
-  ]
+	"accounts": [
+		{
+			"id": "account_1",
+			"upstreamId": "upstream_1",
+			"username": "alice",
+			"email": "alice@example.com",
+			"badge": "moderator"
+		},
+		{
+			"id": "account_2",
+			"upstreamId": "upstream_2",
+			"username": "bob",
+			"email": "bob@example.com",
+			"badge": null
+		},
+		{
+			"id": "account_3",
+			"upstreamId": "upstream_3",
+			"username": "charlie",
+			"email": "charlie@example.com",
+			"badge": "contributor"
+		}
+	],
+	"threads": [
+		{
+			"id": "thread_1",
+			"accountId": "account_1",
+			"upstreamId": "upstream_thread_1",
+			"title": "Welcome to Anythreads!",
+			"body": "This is the first thread in our community. Feel free to share your thoughts!",
+			"allowReplies": true
+		},
+		{
+			"id": "thread_2",
+			"accountId": "account_2",
+			"upstreamId": "upstream_thread_2",
+			"title": "Feature Discussion",
+			"body": "What features would you like to see next?",
+			"allowReplies": true
+		}
+	],
+	"replies": [
+		{
+			"id": "reply_1",
+			"threadId": "thread_1",
+			"accountId": "account_2",
+			"body": "Great to be here!",
+			"replyToId": null
+		},
+		{
+			"id": "reply_2",
+			"threadId": "thread_1",
+			"accountId": "account_3",
+			"body": "Thanks for the warm welcome!",
+			"replyToId": null
+		},
+		{
+			"id": "reply_3",
+			"threadId": "thread_1",
+			"accountId": "account_1",
+			"body": "Glad to have you both!",
+			"replyToId": "reply_1"
+		},
+		{
+			"id": "reply_4",
+			"threadId": "thread_2",
+			"accountId": "account_1",
+			"body": "I'd love to see better notification support",
+			"replyToId": null
+		},
+		{
+			"id": "reply_5",
+			"threadId": "thread_2",
+			"accountId": "account_3",
+			"body": "Dark mode would be nice",
+			"replyToId": null
+		},
+		{
+			"id": "reply_6",
+			"threadId": "thread_2",
+			"accountId": "account_2",
+			"body": "Both great suggestions!",
+			"replyToId": "reply_4"
+		},
+		{
+			"id": "reply_7",
+			"threadId": "thread_1",
+			"accountId": "account_2",
+			"body": "Looking forward to participating more",
+			"replyToId": "reply_3"
+		},
+		{
+			"id": "reply_8",
+			"threadId": "thread_2",
+			"accountId": "account_1",
+			"body": "We're considering all of these!",
+			"replyToId": "reply_5"
+		}
+	],
+	"votes": [
+		{
+			"id": "vote_1",
+			"threadId": "thread_1",
+			"accountId": "account_2",
+			"replyId": null,
+			"direction": "up"
+		},
+		{
+			"id": "vote_2",
+			"threadId": "thread_1",
+			"accountId": "account_3",
+			"replyId": null,
+			"direction": "up"
+		},
+		{
+			"id": "vote_3",
+			"threadId": "thread_2",
+			"accountId": "account_1",
+			"replyId": null,
+			"direction": "up"
+		},
+		{
+			"id": "vote_4",
+			"threadId": "thread_2",
+			"accountId": "account_3",
+			"replyId": null,
+			"direction": "up"
+		},
+		{
+			"id": "vote_5",
+			"threadId": "thread_1",
+			"accountId": "account_1",
+			"replyId": "reply_1",
+			"direction": "up"
+		},
+		{
+			"id": "vote_6",
+			"threadId": "thread_1",
+			"accountId": "account_3",
+			"replyId": "reply_2",
+			"direction": "up"
+		},
+		{
+			"id": "vote_7",
+			"threadId": "thread_2",
+			"accountId": "account_2",
+			"replyId": "reply_4",
+			"direction": "up"
+		},
+		{
+			"id": "vote_8",
+			"threadId": "thread_2",
+			"accountId": "account_1",
+			"replyId": "reply_5",
+			"direction": "up"
+		},
+		{
+			"id": "vote_9",
+			"threadId": "thread_1",
+			"accountId": "account_2",
+			"replyId": "reply_3",
+			"direction": "up"
+		},
+		{
+			"id": "vote_10",
+			"threadId": "thread_2",
+			"accountId": "account_3",
+			"replyId": "reply_6",
+			"direction": "up"
+		}
+	]
 }

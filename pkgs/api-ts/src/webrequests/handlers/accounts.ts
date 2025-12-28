@@ -103,7 +103,7 @@ export async function unbanAccount(
 	return msgToResponse(result);
 }
 
-export async function getVotesInThread(
+export async function getPersonalizedThread(
 	anythreads: Anythreads,
 	_request: Request,
 	params: Record<string, string>,

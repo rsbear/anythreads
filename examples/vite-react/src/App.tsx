@@ -3,7 +3,7 @@ import "./App.css";
 
 import { createAnythreads } from "@anythreads/api";
 
-import type { VotesInThread } from "@anythreads/api/accounts";
+import type { PersonalizedThread } from "@anythreads/api/accounts";
 import type { Msg } from "@anythreads/api/msg";
 import type {
   ReplyWithNested,
@@ -30,7 +30,7 @@ const at = createAnythreads({
 });
 
 const picked = store<Msg<ThreadComplete>>({ kind: "none", value: null });
-const myVotes = store<Msg<VotesInThread>>({ kind: "none", value: null });
+const myVotes = store<Msg<PersonalizedThread>>({ kind: "none", value: null });
 
 export default function App() {
   const [msg, setMsg] = React.useState<Msg<ThreadType[]> | undefined>(
