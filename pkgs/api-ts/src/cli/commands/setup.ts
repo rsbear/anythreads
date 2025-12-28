@@ -100,20 +100,25 @@ const TABLE_INDEXES: Record<TableName, string[]> = {
 
 async function setupTable(
 	db: any,
-	dbType: "bun_sqlite" | "sqlite3" | "postgres",
+	dbType: "bun_sqlite" | "libsql" | "postgres",
 	table: TableName,
 ): Promise<void> {
 	console.log(`Setting up ${table} table...`);
 
 	const schema =
-		dbType === "bun_sqlite" || dbType === "sqlite3"
+		dbType === "bun_sqlite" || dbType === "libsql"
 			? TABLE_SCHEMAS_SQLITE[table]
 			: TABLE_SCHEMAS_POSTGRES[table];
 
-	if (dbType === "bun_sqlite" || dbType === "sqlite3") {
+	if (dbType === "bun_sqlite") {
 		db.run(schema);
 		for (const indexSql of TABLE_INDEXES[table]) {
 			db.run(indexSql);
+		}
+	} else if (dbType === "libsql") {
+		await db.execute(schema);
+		for (const indexSql of TABLE_INDEXES[table]) {
+			await db.execute(indexSql);
 		}
 	} else {
 		await db.query(schema);

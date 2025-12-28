@@ -1,10 +1,10 @@
 import { createAnythreads } from "@anythreads/api";
-import  Database  from 'better-sqlite3'
+import { createClient } from "@libsql/client";
 
-const db = new Database("test.sqlite");
+const client = createClient({ url: "file:test.sqlite" });
 
 export const anythreads = createAnythreads({
   adapter: {
-    sqlite3: db,
+    libsql: client,
   },
 });

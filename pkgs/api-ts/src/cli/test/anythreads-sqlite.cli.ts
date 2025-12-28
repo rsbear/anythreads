@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import { setupAnythreads } from "../../api/cli.ts";
+import { setupAnythreads } from "../mod.ts";
 
 const db = new Database("file:test.sqlite");
 

@@ -1,4 +1,4 @@
-import { setupAnythreads } from "../../api/cli.ts";
+import { setupAnythreads } from "../mod.ts";
 
 const pgConfig = {
 	host: process.env.POSTGRES_HOST || "localhost",

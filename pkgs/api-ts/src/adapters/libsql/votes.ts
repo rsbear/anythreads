@@ -1,3 +1,4 @@
+import { type Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
@@ -7,8 +8,8 @@ import type {
 } from "../adapter-votes.ts";
 import { mapDbToVote } from "../maps.ts";
 
-export class SQLite3VotesAdapter implements VotesDataAdapter {
-	constructor(private db: any) {}
+export class LibSQLVotesAdapter implements VotesDataAdapter {
+	constructor(private client: Client) {}
 
 	public async voteUpThread(
 		accountId: string,
@@ -57,38 +58,42 @@ export class SQLite3VotesAdapter implements VotesDataAdapter {
 				whereClauses.push("reply_id IS NULL");
 			}
 
-			const existingVote = this.db
-				.prepare(`SELECT * FROM votes WHERE ${whereClauses.join(" AND ")}`)
-				.get(...whereValues) as any;
+			const existingVoteResult = await this.client.execute({
+				sql: `SELECT * FROM votes WHERE ${whereClauses.join(" AND ")}`,
+				args: whereValues,
+			});
+
+			const existingVote = existingVoteResult.rows[0];
 
 			if (existingVote) {
 				const updatedAt = Date.now();
-				const stmt = this.db.prepare(`
-          UPDATE votes
-          SET direction = ?, updated_at = ?
-          WHERE id = ?
-        `);
-				stmt.run(direction, updatedAt, existingVote.id);
+				await this.client.execute({
+					sql: "UPDATE votes SET direction = ?, updated_at = ? WHERE id = ?",
+					args: [direction, updatedAt, existingVote.id],
+				});
 
-				const result = this.db
-					.prepare("SELECT * FROM votes WHERE id = ?")
-					.get(existingVote.id);
-				return some(mapDbToVote(result));
-			} else {
-				const id = createId();
-				const now = Date.now();
+				const result = await this.client.execute({
+					sql: "SELECT * FROM votes WHERE id = ?",
+					args: [existingVote.id],
+				});
+				return some(mapDbToVote(result.rows[0]));
+			}
+			const id = createId();
+			const now = Date.now();
 
-				const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
           INSERT INTO votes (id, thread_id, account_id, reply_id, direction, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?)
-        `);
-				stmt.run(id, threadId, accountId, replyId, direction, now, now);
+        `,
+				args: [id, threadId, accountId, replyId, direction, now, now],
+			});
 
-				const result = this.db
-					.prepare("SELECT * FROM votes WHERE id = ?")
-					.get(id);
-				return some(mapDbToVote(result));
-			}
+			const result = await this.client.execute({
+				sql: "SELECT * FROM votes WHERE id = ?",
+				args: [id],
+			});
+			return some(mapDbToVote(result.rows[0]));
 		} catch (error) {
 			console.log("VOTE_CREATE", error);
 			const metadata =
@@ -101,10 +106,12 @@ export class SQLite3VotesAdapter implements VotesDataAdapter {
 
 	public async delete(id: string): Promise<Msg<"ok">> {
 		try {
-			const stmt = this.db.prepare("DELETE FROM votes WHERE id = ?");
-			const result = stmt.run(id);
+			const result = await this.client.execute({
+				sql: "DELETE FROM votes WHERE id = ?",
+				args: [id],
+			});
 
-			if (result.changes === 0) {
+			if (result.rowsAffected === 0) {
 				return none("Vote not found");
 			}
 			return some("ok" as const);
@@ -120,13 +127,14 @@ export class SQLite3VotesAdapter implements VotesDataAdapter {
 
 	public async findOne(id: string): Promise<Msg<Vote>> {
 		try {
-			const result = this.db
-				.prepare("SELECT * FROM votes WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM votes WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Vote not found");
 			}
-			return some(mapDbToVote(result));
+			return some(mapDbToVote(result.rows[0]));
 		} catch (error) {
 			console.log("VOTE_FIND_ONE", error);
 			const metadata =
@@ -187,8 +195,8 @@ export class SQLite3VotesAdapter implements VotesDataAdapter {
 
 			values.push(limit, offset);
 			const query = `SELECT * FROM votes ${whereClause} ${orderClause} LIMIT ? OFFSET ?`;
-			const results = this.db.prepare(query).all(...values);
-			return some((results as any[]).map(mapDbToVote));
+			const results = await this.client.execute({ sql: query, args: values });
+			return some(results.rows.map(mapDbToVote));
 		} catch (error) {
 			console.log("VOTE_FIND_MANY", error);
 			const metadata =

@@ -5,14 +5,16 @@ type TableName = (typeof TABLES)[number];
 
 async function dropTable(
 	db: any,
-	dbType: "bun_sqlite" | "sqlite3" | "postgres",
+	dbType: "bun_sqlite" | "libsql" | "postgres",
 	table: TableName,
 ): Promise<void> {
 	console.log(`Dropping ${table} table...`);
 	const sql = `DROP TABLE IF EXISTS ${table}`;
 
-	if (dbType === "bun_sqlite" || dbType === "sqlite3") {
+	if (dbType === "bun_sqlite") {
 		db.run(sql);
+	} else if (dbType === "libsql") {
+		await db.execute(sql);
 	} else {
 		await db.query(sql);
 	}

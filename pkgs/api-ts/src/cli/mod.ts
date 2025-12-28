@@ -1,3 +1,4 @@
+import { type Client as LibSQLClient } from "@libsql/client";
 import type { Database } from "bun:sqlite";
 
 import type { Anythreads } from "./../mod.ts";
@@ -6,7 +7,7 @@ import { createAnythreads } from "./../mod.ts";
 
 interface SetupAnythreadsOptions {
 	bunSQLite?: Database;
-	sqlite3?: any;
+	libsql?: LibSQLClient;
 	postgres?: any;
 	fetch?: {
 		url: string;
@@ -16,8 +17,8 @@ interface SetupAnythreadsOptions {
 
 export interface AnythreadsCLI {
 	instance: Anythreads;
-	db: Database | any | null;
-	dbType: "bun_sqlite" | "sqlite3" | "postgres" | "fetch";
+	db: Database | LibSQLClient | any | null;
+	dbType: "bun_sqlite" | "libsql" | "postgres" | "fetch";
 }
 
 export function setupAnythreads(
@@ -25,14 +26,14 @@ export function setupAnythreads(
 ): AnythreadsCLI {
 	const adapterCount = [
 		options.bunSQLite,
-		options.sqlite3,
+		options.libsql,
 		options.postgres,
 		options.fetch,
 	].filter(Boolean).length;
 
 	if (adapterCount === 0) {
 		throw new Error(
-			"An adapter is required (bunSQLite, sqlite3, postgres, or fetch)",
+			"An adapter is required (bunSQLite, libsql, postgres, or fetch)",
 		);
 	}
 
@@ -51,14 +52,14 @@ export function setupAnythreads(
 		};
 	}
 
-	if (options.sqlite3) {
+	if (options.libsql) {
 		const instanceResult = createAnythreads({
-			adapter: { sqlite3: options.sqlite3 },
+			adapter: { libsql: options.libsql },
 		});
 		return {
 			instance: instanceResult,
-			db: options.sqlite3,
-			dbType: "sqlite3" as const,
+			db: options.libsql,
+			dbType: "libsql" as const,
 		};
 	}
 

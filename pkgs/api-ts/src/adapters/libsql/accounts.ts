@@ -1,3 +1,4 @@
+import { type Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
@@ -11,8 +12,8 @@ import type {
 } from "../adapter-accounts.ts";
 import { mapDbToAccount } from "../maps.ts";
 
-export class SQLite3AccountsAdapter implements AccountsDataAdapter {
-	constructor(private db: any) {}
+export class LibSQLAccountsAdapter implements AccountsDataAdapter {
+	constructor(private client: Client) {}
 
 	public async create(account: AccountCreateOrUpdate): Promise<Msg<Account>> {
 		try {
@@ -21,25 +22,28 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 			const upstreamId = account.upstreamId || null;
 			const extras = JSON.stringify(account.extras || {});
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         INSERT INTO accounts (id, upstream_id, username, email, badge, banned, banned_at, created_at, updated_at, extras)
         VALUES (?, ?, ?, ?, ?, 0, NULL, ?, ?, ?)
-      `);
-			stmt.run(
-				id,
-				upstreamId,
-				account.username,
-				account.email || null,
-				account.badge || null,
-				now,
-				now,
-				extras,
-			);
+      `,
+				args: [
+					id,
+					upstreamId,
+					account.username,
+					account.email || null,
+					account.badge || null,
+					now,
+					now,
+					extras,
+				],
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			return some(mapDbToAccount(result));
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_CREATE", error);
 			const metadata =
@@ -88,18 +92,19 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 			values.push(updatedAt);
 			values.push(id);
 
-			const stmt = this.db.prepare(
-				`UPDATE accounts SET ${updates.join(", ")} WHERE id = ?`,
-			);
-			stmt.run(...values);
+			await this.client.execute({
+				sql: `UPDATE accounts SET ${updates.join(", ")} WHERE id = ?`,
+				args: values,
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Account not found");
 			}
-			return some(mapDbToAccount(result));
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_UPDATE", error);
 			const metadata =
@@ -116,20 +121,23 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 			const bannedUntil = until ? until.getTime() : null;
 			const updatedAt = Date.now();
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         UPDATE accounts
         SET banned = 1, banned_at = ?, banned_until = ?, updated_at = ?
         WHERE id = ?
-      `);
-			stmt.run(bannedAt, bannedUntil, updatedAt, id);
+      `,
+				args: [bannedAt, bannedUntil, updatedAt, id],
+			});
 
-			const retrievedAccount = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			if (!retrievedAccount) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Account not found");
 			}
-			return some(mapDbToAccount(retrievedAccount));
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_BAN", error);
 			const metadata =
@@ -144,20 +152,23 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 		try {
 			const updatedAt = Date.now();
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         UPDATE accounts
         SET banned = 0, banned_at = NULL, banned_until = NULL, updated_at = ?
         WHERE id = ?
-      `);
-			stmt.run(updatedAt, id);
+      `,
+				args: [updatedAt, id],
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Account not found");
 			}
-			return some(mapDbToAccount(result));
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_UNBAN", error);
 			const metadata =
@@ -174,20 +185,23 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 			const updatedAt = Date.now();
 			const randomUsername = `random-${crypto.randomUUID()}-${Math.floor(Math.random() * 10000)}`;
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         UPDATE accounts
         SET deleted_at = ?, updated_at = ?, username = ?, email = NULL
         WHERE id = ?
-      `);
-			stmt.run(deletedAt, updatedAt, randomUsername, id);
+      `,
+				args: [deletedAt, updatedAt, randomUsername, id],
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Account not found");
 			}
-			return some(mapDbToAccount(result));
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_DELETE", error);
 			const metadata =
@@ -200,13 +214,14 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 
 	public async findOne(id: string): Promise<Msg<Account>> {
 		try {
-			const result = this.db
-				.prepare("SELECT * FROM accounts WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Account not found");
 			}
-			return some(mapDbToAccount(result));
+			return some(mapDbToAccount(result.rows[0]));
 		} catch (error) {
 			console.log("ACCOUNT_FIND_ONE", error);
 			const metadata =
@@ -224,11 +239,12 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 			const limit = opts?.limit || 50;
 			const offset = opts?.offset || 0;
 
-			const results = this.db
-				.prepare("SELECT * FROM accounts LIMIT ? OFFSET ?")
-				.all(limit, offset);
+			const result = await this.client.execute({
+				sql: "SELECT * FROM accounts LIMIT ? OFFSET ?",
+				args: [limit, offset],
+			});
 
-			return some((results as any[]).map(mapDbToAccount));
+			return some(result.rows.map(mapDbToAccount));
 		} catch (error) {
 			console.log("ACCOUNT_FIND_MANY", error);
 			const metadata =
@@ -244,9 +260,8 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
 	): Promise<Msg<PersonalizedThread>> {
 		const { accountId, threadId } = opts;
 		try {
-			const votes = this.db
-				.prepare(
-					`
+			const result = await this.client.execute({
+				sql: `
         SELECT
           thread_id,
           reply_id,
@@ -255,16 +270,17 @@ export class SQLite3AccountsAdapter implements AccountsDataAdapter {
         FROM votes
         WHERE thread_id = ? AND account_id = ?
       `,
-				)
-				.all(threadId, accountId) as Array<{
-				thread_id: string;
-				reply_id: string | null;
-				account_id: string;
-				direction: string;
-			}>;
+				args: [threadId, accountId],
+			});
 
 			const voteHash: PersonalizedThread = {};
-			for (const vote of votes) {
+			for (const row of result.rows) {
+				const vote = row as unknown as {
+					thread_id: string;
+					reply_id: string | null;
+					account_id: string;
+					direction: string;
+				};
 				const key = vote.reply_id
 					? `reply:${vote.reply_id}`
 					: `thread:${vote.thread_id}`;

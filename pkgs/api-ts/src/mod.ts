@@ -1,5 +1,6 @@
+import { type Client as LibSQLClient } from "@libsql/client";
 import type { Database } from "bun:sqlite";
-import { createSQLite3Adapter } from "./adapters/better-sqlite3/mod.ts";
+import { createLibSQLAdapter } from "./adapters/libsql/mod.ts";
 import { createBunSQLiteAdapter } from "./adapters/bunsqlite/mod.ts";
 import { createFetchAdapter } from "./adapters/fetch/mod.ts";
 import type { Anythreads } from "./adapters/mod.ts";
@@ -7,7 +8,7 @@ import { createPostgresAdapter } from "./adapters/postgres/mod.ts";
 
 export type AdapterConfig =
 	| { bunSQLite: Database }
-	| { sqlite3: any }
+	| { libsql: LibSQLClient }
 	| { postgres: any }
 	| {
 			fetch: { url: string; credentials?: "include" | "omit" | "same-origin" };
@@ -34,15 +35,15 @@ export function createAnythreads(options: CreateAnythreadsOptions): Anythreads {
 
 	if ("bunSQLite" in options.adapter) {
 		baseAdapter = createBunSQLiteAdapter(options.adapter.bunSQLite);
-	} else if ("sqlite3" in options.adapter) {
-		baseAdapter = createSQLite3Adapter(options.adapter.sqlite3);
+	} else if ("libsql" in options.adapter) {
+		baseAdapter = createLibSQLAdapter(options.adapter.libsql);
 	} else if ("postgres" in options.adapter) {
 		baseAdapter = createPostgresAdapter(options.adapter.postgres);
 	} else if ("fetch" in options.adapter) {
 		baseAdapter = createFetchAdapter(options.adapter.fetch);
 	} else {
 		throw new Error(
-			"An adapter is required (bunSQLite, sqlite3, postgres, or fetch)",
+			"An adapter is required (bunSQLite, libsql, postgres, or fetch)",
 		);
 	}
 

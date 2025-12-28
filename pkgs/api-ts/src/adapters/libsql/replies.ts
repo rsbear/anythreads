@@ -1,3 +1,4 @@
+import { type Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
@@ -9,8 +10,8 @@ import type {
 } from "../adapter-replies.ts";
 import { mapDbToReply } from "../maps.ts";
 
-export class SQLite3RepliesAdapter implements RepliesDataAdapter {
-	constructor(private db: any) {}
+export class LibSQLRepliesAdapter implements RepliesDataAdapter {
+	constructor(private client: Client) {}
 
 	public async create(reply: ReplyCreate): Promise<Msg<Reply>> {
 		try {
@@ -18,25 +19,28 @@ export class SQLite3RepliesAdapter implements RepliesDataAdapter {
 			const now = Date.now();
 			const extras = JSON.stringify(reply.extras || {});
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         INSERT INTO replies (id, thread_id, account_id, body, reply_to_id, created_at, updated_at, deleted_at, extras)
         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
-      `);
-			stmt.run(
-				id,
-				reply.threadId,
-				reply.accountId,
-				reply.body,
-				reply.replyToId || null,
-				now,
-				now,
-				extras,
-			);
+      `,
+				args: [
+					id,
+					reply.threadId,
+					reply.accountId,
+					reply.body,
+					reply.replyToId || null,
+					now,
+					now,
+					extras,
+				],
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM replies WHERE id = ?")
-				.get(id);
-			return some(mapDbToReply(result));
+			const result = await this.client.execute({
+				sql: "SELECT * FROM replies WHERE id = ?",
+				args: [id],
+			});
+			return some(mapDbToReply(result.rows[0]));
 		} catch (error) {
 			console.log("REPLY_CREATE", error);
 			const metadata =
@@ -68,18 +72,19 @@ export class SQLite3RepliesAdapter implements RepliesDataAdapter {
 			values.push(updatedAt);
 			values.push(id);
 
-			const stmt = this.db.prepare(
-				`UPDATE replies SET ${updates.join(", ")} WHERE id = ?`,
-			);
-			stmt.run(...values);
+			await this.client.execute({
+				sql: `UPDATE replies SET ${updates.join(", ")} WHERE id = ?`,
+				args: values,
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM replies WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM replies WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Reply not found");
 			}
-			return some(mapDbToReply(result));
+			return some(mapDbToReply(result.rows[0]));
 		} catch (error) {
 			console.log("REPLY_UPDATE", error);
 			const metadata =
@@ -92,22 +97,25 @@ export class SQLite3RepliesAdapter implements RepliesDataAdapter {
 
 	public async delete(id: string): Promise<Msg<"ok">> {
 		try {
-			const existing = this.db
-				.prepare("SELECT * FROM replies WHERE id = ?")
-				.get(id);
-			if (!existing) {
+			const existing = await this.client.execute({
+				sql: "SELECT * FROM replies WHERE id = ?",
+				args: [id],
+			});
+			if (existing.rows.length === 0) {
 				return none("Reply not found");
 			}
 
 			const deletedAt = Date.now();
 			const updatedAt = Date.now();
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         UPDATE replies
         SET deleted_at = ?, updated_at = ?
         WHERE id = ?
-      `);
-			stmt.run(deletedAt, updatedAt, id);
+      `,
+				args: [deletedAt, updatedAt, id],
+			});
 
 			return some("ok" as const);
 		} catch (error) {
@@ -122,13 +130,14 @@ export class SQLite3RepliesAdapter implements RepliesDataAdapter {
 
 	public async findOne(id: string): Promise<Msg<Reply>> {
 		try {
-			const result = this.db
-				.prepare("SELECT * FROM replies WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM replies WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Reply not found");
 			}
-			return some(mapDbToReply(result));
+			return some(mapDbToReply(result.rows[0]));
 		} catch (error) {
 			console.log("REPLY_FIND_ONE", error);
 			const metadata =
@@ -184,8 +193,8 @@ export class SQLite3RepliesAdapter implements RepliesDataAdapter {
 
 			values.push(limit, offset);
 			const query = `SELECT * FROM replies ${whereClause} ${orderClause} LIMIT ? OFFSET ?`;
-			const results = this.db.prepare(query).all(...values);
-			return some((results as any[]).map(mapDbToReply));
+			const results = await this.client.execute({ sql: query, args: values });
+			return some(results.rows.map(mapDbToReply));
 		} catch (error) {
 			console.log("REPLY_FIND_MANY", error);
 			const metadata =

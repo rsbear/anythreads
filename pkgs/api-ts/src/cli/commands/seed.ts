@@ -61,6 +61,21 @@ async function seedAccounts(config: any): Promise<void> {
 				now,
 				extras,
 			);
+		} else if (config.dbType === "libsql") {
+			await config.db.execute({
+				sql: `INSERT INTO accounts (id, upstream_id, username, email, badge, banned, banned_at, created_at, updated_at, extras)
+         VALUES (?, ?, ?, ?, ?, 0, NULL, ?, ?, ?)`,
+				args: [
+					account.id,
+					account.upstreamId,
+					account.username,
+					account.email,
+					account.badge,
+					now,
+					now,
+					extras,
+				],
+			});
 		} else {
 			await config.db.query(
 				`INSERT INTO accounts (id, upstream_id, username, email, badge, banned, banned_at, created_at, updated_at, extras)
@@ -104,6 +119,22 @@ async function seedThreads(config: any): Promise<void> {
 				now,
 				extras,
 			);
+		} else if (config.dbType === "libsql") {
+			await config.db.execute({
+				sql: `INSERT INTO threads (id, account_id, upstream_id, title, body, allow_replies, created_at, updated_at, extras)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				args: [
+					thread.id,
+					thread.accountId,
+					thread.upstreamId,
+					thread.title,
+					thread.body,
+					thread.allowReplies ? 1 : 0,
+					now,
+					now,
+					extras,
+				],
+			});
 		} else {
 			await config.db.query(
 				`INSERT INTO threads (id, account_id, upstream_id, title, body, allow_replies, created_at, updated_at, extras)
@@ -147,6 +178,21 @@ async function seedReplies(config: any): Promise<void> {
 				now,
 				extras,
 			);
+		} else if (config.dbType === "libsql") {
+			await config.db.execute({
+				sql: `INSERT INTO replies (id, thread_id, account_id, body, reply_to_id, created_at, updated_at, extras)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+				args: [
+					reply.id,
+					reply.threadId,
+					reply.accountId,
+					reply.body,
+					reply.replyToId,
+					now,
+					now,
+					extras,
+				],
+			});
 		} else {
 			await config.db.query(
 				`INSERT INTO replies (id, thread_id, account_id, body, reply_to_id, created_at, updated_at, extras)
@@ -187,6 +233,20 @@ async function seedVotes(config: any): Promise<void> {
 				now,
 				now,
 			);
+		} else if (config.dbType === "libsql") {
+			await config.db.execute({
+				sql: `INSERT INTO votes (id, thread_id, account_id, reply_id, direction, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				args: [
+					vote.id,
+					vote.threadId,
+					vote.accountId,
+					vote.replyId,
+					vote.direction,
+					now,
+					now,
+				],
+			});
 		} else {
 			await config.db.query(
 				`INSERT INTO votes (id, thread_id, account_id, reply_id, direction, created_at, updated_at)

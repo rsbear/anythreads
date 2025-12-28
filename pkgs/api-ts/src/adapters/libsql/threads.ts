@@ -1,3 +1,4 @@
+import { type Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
@@ -18,8 +19,8 @@ import {
 	maskDeletedAccount,
 } from "../maps.ts";
 
-export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
-	constructor(private db: any) {}
+export class LibSQLThreadsAdapter implements ThreadsDataAdapter {
+	constructor(private client: Client) {}
 
 	public async create(thread: ThreadCreate): Promise<Msg<Thread>> {
 		try {
@@ -30,26 +31,29 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 				thread.allowReplies !== undefined ? thread.allowReplies : true;
 			const extras = JSON.stringify(thread.extras || {});
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         INSERT INTO threads (id, account_id, upstream_id, title, body, allow_replies, created_at, updated_at, deleted_at, extras)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)
-      `);
-			stmt.run(
-				id,
-				thread.accountId,
-				upstreamId,
-				thread.title,
-				thread.body,
-				allowReplies ? 1 : 0,
-				now,
-				now,
-				extras,
-			);
+      `,
+				args: [
+					id,
+					thread.accountId,
+					upstreamId,
+					thread.title,
+					thread.body,
+					allowReplies ? 1 : 0,
+					now,
+					now,
+					extras,
+				],
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM threads WHERE id = ?")
-				.get(id);
-			return some(mapDbToThread(result));
+			const result = await this.client.execute({
+				sql: "SELECT * FROM threads WHERE id = ?",
+				args: [id],
+			});
+			return some(mapDbToThread(result.rows[0]));
 		} catch (error) {
 			console.log("THREAD_CREATE", error);
 			const metadata =
@@ -89,18 +93,19 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 			values.push(updatedAt);
 			values.push(id);
 
-			const stmt = this.db.prepare(
-				`UPDATE threads SET ${updates.join(", ")} WHERE id = ?`,
-			);
-			stmt.run(...values);
+			await this.client.execute({
+				sql: `UPDATE threads SET ${updates.join(", ")} WHERE id = ?`,
+				args: values,
+			});
 
-			const result = this.db
-				.prepare("SELECT * FROM threads WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM threads WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Thread not found");
 			}
-			return some(mapDbToThread(result));
+			return some(mapDbToThread(result.rows[0]));
 		} catch (error) {
 			console.log("THREAD_UPDATE", error);
 			const metadata =
@@ -113,22 +118,25 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 
 	public async delete(id: string): Promise<Msg<"ok">> {
 		try {
-			const existing = this.db
-				.prepare("SELECT * FROM threads WHERE id = ?")
-				.get(id);
-			if (!existing) {
+			const existing = await this.client.execute({
+				sql: "SELECT * FROM threads WHERE id = ?",
+				args: [id],
+			});
+			if (existing.rows.length === 0) {
 				return none("Thread not found");
 			}
 
 			const deletedAt = Date.now();
 			const updatedAt = Date.now();
 
-			const stmt = this.db.prepare(`
+			await this.client.execute({
+				sql: `
         UPDATE threads
         SET deleted_at = ?, updated_at = ?
         WHERE id = ?
-      `);
-			stmt.run(deletedAt, updatedAt, id);
+      `,
+				args: [deletedAt, updatedAt, id],
+			});
 
 			return some("ok" as const);
 		} catch (error) {
@@ -143,13 +151,14 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 
 	public async findOne(id: string): Promise<Msg<Thread>> {
 		try {
-			const result = this.db
-				.prepare("SELECT * FROM threads WHERE id = ?")
-				.get(id);
-			if (!result) {
+			const result = await this.client.execute({
+				sql: "SELECT * FROM threads WHERE id = ?",
+				args: [id],
+			});
+			if (result.rows.length === 0) {
 				return none("Thread not found");
 			}
-			return some(mapDbToThread(result));
+			return some(mapDbToThread(result.rows[0]));
 		} catch (error) {
 			console.log("THREAD_FIND_ONE", error);
 			const metadata =
@@ -195,8 +204,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 
 			values.push(limit, offset);
 			const query = `SELECT * FROM threads ${whereClause} ${orderClause} LIMIT ? OFFSET ?`;
-			const results = this.db.prepare(query).all(...values);
-			return some((results as any[]).map(mapDbToThread));
+			const results = await this.client.execute({ sql: query, args: values });
+			return some(results.rows.map(mapDbToThread));
 		} catch (error) {
 			console.log("THREAD_FIND_MANY", error);
 			const metadata =
@@ -212,9 +221,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 		maxReplyDepth?: number,
 	): Promise<Msg<ThreadComplete>> {
 		try {
-			const threadRow = this.db
-				.prepare(
-					`
+			const threadResult = await this.client.execute({
+				sql: `
         SELECT
           t.*,
           a.id as account_id_full,
@@ -232,16 +240,16 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
         INNER JOIN accounts a ON t.account_id = a.id
         WHERE t.id = ?
       `,
-				)
-				.get(id);
+				args: [id],
+			});
 
+			const threadRow = threadResult.rows[0];
 			if (!threadRow) {
 				return none("Thread not found");
 			}
 
-			const threadVotes = this.db
-				.prepare(
-					`
+			const threadVotesResult = await this.client.execute({
+				sql: `
         SELECT
           direction,
           COUNT(*) as count
@@ -249,8 +257,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
         WHERE thread_id = ? AND reply_id IS NULL
         GROUP BY direction
       `,
-				)
-				.all(id) as Array<{ direction: string; count: number }>;
+				args: [id],
+			});
 
 			const voteCount: VoteCount = {
 				upvotes: 0,
@@ -258,28 +266,29 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 				total: 0,
 			};
 
-			for (const vote of threadVotes) {
+			for (const row of threadVotesResult.rows) {
+				const vote = row as unknown as { direction: string; count: number };
 				if (vote.direction === "up") {
-					voteCount.upvotes = vote.count;
+					voteCount.upvotes = Number(vote.count);
 				} else if (vote.direction === "down") {
-					voteCount.downvotes = vote.count;
+					voteCount.downvotes = Number(vote.count);
 				}
 			}
 			voteCount.total = voteCount.upvotes - voteCount.downvotes;
 
 			const thread = mapDbToThread(threadRow);
 			const account = mapDbToAccount({
-				id: (threadRow as any).account_id_full,
-				upstream_id: (threadRow as any).account_upstream_id,
-				username: (threadRow as any).account_username,
-				email: (threadRow as any).account_email,
-				badge: (threadRow as any).account_badge,
-				banned: (threadRow as any).account_banned,
-				banned_at: (threadRow as any).account_banned_at,
-				created_at: (threadRow as any).account_created_at,
-				updated_at: (threadRow as any).account_updated_at,
-				deleted_at: (threadRow as any).account_deleted_at,
-				extras: (threadRow as any).account_extras,
+				id: threadRow.account_id_full,
+				upstream_id: threadRow.account_upstream_id,
+				username: threadRow.account_username,
+				email: threadRow.account_email,
+				badge: threadRow.account_badge,
+				banned: threadRow.account_banned,
+				banned_at: threadRow.account_banned_at,
+				created_at: threadRow.account_created_at,
+				updated_at: threadRow.account_updated_at,
+				deleted_at: threadRow.account_deleted_at,
+				extras: threadRow.account_extras,
 			});
 
 			const threadWithDetails: ThreadWithDetails = {
@@ -288,9 +297,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 				voteCount,
 			};
 
-			const replyRows = this.db
-				.prepare(
-					`
+			const replyRowsResult = await this.client.execute({
+				sql: `
         SELECT
           r.*,
           a.id as account_id_full,
@@ -309,10 +317,11 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
         WHERE r.thread_id = ?
         ORDER BY r.created_at ASC
       `,
-				)
-				.all(id);
+				args: [id],
+			});
 
-			const repliesWithAccounts = (replyRows as any[]).map((row: any) => {
+			const repliesWithAccounts = [];
+			for (const row of replyRowsResult.rows) {
 				const reply = mapDbToReply(row);
 				const replyAccount = mapDbToAccount({
 					id: row.account_id_full,
@@ -328,9 +337,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 					extras: row.account_extras,
 				});
 
-				const replyVotes = this.db
-					.prepare(
-						`
+				const replyVotesResult = await this.client.execute({
+					sql: `
           SELECT
             direction,
             COUNT(*) as count
@@ -338,8 +346,8 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
           WHERE reply_id = ?
           GROUP BY direction
         `,
-					)
-					.all(reply.id) as Array<{ direction: string; count: number }>;
+					args: [reply.id],
+				});
 
 				const replyVoteCount: VoteCount = {
 					upvotes: 0,
@@ -347,22 +355,23 @@ export class SQLite3ThreadsAdapter implements ThreadsDataAdapter {
 					total: 0,
 				};
 
-				for (const vote of replyVotes) {
+				for (const vRow of replyVotesResult.rows) {
+					const vote = vRow as unknown as { direction: string; count: number };
 					if (vote.direction === "up") {
-						replyVoteCount.upvotes = vote.count;
+						replyVoteCount.upvotes = Number(vote.count);
 					} else if (vote.direction === "down") {
-						replyVoteCount.downvotes = vote.count;
+						replyVoteCount.downvotes = Number(vote.count);
 					}
 				}
 				replyVoteCount.total =
 					replyVoteCount.upvotes - replyVoteCount.downvotes;
 
-				return {
+				repliesWithAccounts.push({
 					...reply,
 					account: replyAccount,
 					voteCount: replyVoteCount,
-				};
-			});
+				});
+			}
 
 			const replyTree = buildReplyTree(
 				repliesWithAccounts,

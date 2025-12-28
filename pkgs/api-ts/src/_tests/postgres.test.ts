@@ -1,6 +1,6 @@
 import { describe } from "bun:test";
-import { setupAnythreads } from "../cli.ts";
-import { fullCoverageTest } from "./full-coverage.ts";
+import { setupAnythreads } from "../cli/mod.ts";
+import { flowCoverage } from "./flow-coverage.ts";
 
 describe("Postgres Adapter - Full Coverage", () => {
 	const mockPostgres = {
@@ -11,5 +11,5 @@ describe("Postgres Adapter - Full Coverage", () => {
 
 	const setup = setupAnythreads({ postgres: mockPostgres });
 
-	fullCoverageTest(setup);
+	flowCoverage(setup);
 });
