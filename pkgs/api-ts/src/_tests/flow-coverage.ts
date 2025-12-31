@@ -67,11 +67,12 @@ export function flowCoverage(setup) {
 				throw new Error("Why the heck is reply1 none!?");
 			}
 
-			await anythreads.votes.voteUpReply(
-				accountOne.value.id,
-				thread.value.id,
-				reply1.value.id,
-			);
+			await anythreads.votes.create({
+				accountId: accountOne.value.id,
+				threadId: thread.value.id,
+				replyId: reply1.value.id,
+				direction: "up",
+			});
 
 			const reply2 = await anythreads.replies.create({
 				threadId: thread.value.id,
@@ -87,11 +88,12 @@ export function flowCoverage(setup) {
 				throw new Error("Why the heck is reply2 none!?");
 			}
 
-			await anythreads.votes.voteDownReply(
-				secondAccount.value.id,
-				thread.value.id,
-				reply2.value.id,
-			);
+			await anythreads.votes.create({
+				accountId: secondAccount.value.id,
+				threadId: thread.value.id,
+				replyId: reply2.value.id,
+				direction: "down",
+			});
 
 			const complete = await anythreads.threads.complete(thread.value.id);
 			if (isErr(complete)) throw new Error("Failed to complete thread");
@@ -152,10 +154,11 @@ export function flowCoverage(setup) {
 			if (isErr(thread)) throw new Error("Failed to create thread");
 			if (isNone(thread)) throw new Error("Why the heck is thread none!?");
 
-			const upvote = await anythreads.votes.voteUpThread(
-				account.value.id,
-				thread.value.id,
-			);
+			const upvote = await anythreads.votes.create({
+				accountId: account.value.id,
+				threadId: thread.value.id,
+				direction: "up",
+			});
 			if (isErr(upvote)) throw new Error("Failed to upvote thread");
 			if (isNone(upvote)) throw new Error("Why the heck is upvote none!?");
 
@@ -164,10 +167,11 @@ export function flowCoverage(setup) {
 			expect(upvote.value?.threadId).toBe(thread.value.id);
 			expect(upvote.value?.replyId).toBeNull();
 
-			const downvote = await anythreads.votes.voteDownThread(
-				account.value.id,
-				thread.value.id,
-			);
+			const downvote = await anythreads.votes.create({
+				accountId: account.value.id,
+				threadId: thread.value.id,
+				direction: "down",
+			});
 			if (isErr(downvote)) throw new Error("Failed to downvote thread");
 			if (isNone(downvote)) throw new Error("Why the heck is downvote none!?");
 
@@ -206,11 +210,12 @@ export function flowCoverage(setup) {
 			if (isErr(reply)) throw new Error("Failed to create reply");
 			if (isNone(reply)) throw new Error("Why the heck is reply none!?");
 
-			const upvote = await anythreads.votes.voteUpReply(
-				account.value.id,
-				thread.value.id,
-				reply.value.id,
-			);
+			const upvote = await anythreads.votes.create({
+				accountId: account.value.id,
+				threadId: thread.value.id,
+				replyId: reply.value.id,
+				direction: "up",
+			});
 
 			expect(isSome(upvote)).toBe(true);
 			expect(upvote.value?.direction).toBe("up");
@@ -255,21 +260,28 @@ export function flowCoverage(setup) {
 				body: "Second reply",
 			});
 
-			await anythreads.votes.voteUpThread(accountOne.value.id, thread.value.id);
-			await anythreads.votes.voteDownThread(
-				accountTwo.value.id,
-				thread.value.id,
-			);
-			await anythreads.votes.voteUpReply(
-				accountOne.value.id,
-				thread.value.id,
-				reply1.value.id,
-			);
-			await anythreads.votes.voteDownReply(
-				accountTwo.value.id,
-				thread.value.id,
-				reply2.value.id,
-			);
+			await anythreads.votes.create({
+				accountId: accountOne.value.id,
+				threadId: thread.value.id,
+				direction: "up",
+			});
+			await anythreads.votes.create({
+				accountId: accountTwo.value.id,
+				threadId: thread.value.id,
+				direction: "down",
+			});
+			await anythreads.votes.create({
+				accountId: accountOne.value.id,
+				threadId: thread.value.id,
+				replyId: reply1.value.id,
+				direction: "up",
+			});
+			await anythreads.votes.create({
+				accountId: accountTwo.value.id,
+				threadId: thread.value.id,
+				replyId: reply2.value.id,
+				direction: "down",
+			});
 
 			const complete = await anythreads.threads.complete(thread.value.id, 10);
 			expect(isSome(complete)).toBe(true);

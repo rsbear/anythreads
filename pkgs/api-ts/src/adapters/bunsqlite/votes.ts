@@ -11,43 +11,14 @@ import { mapDbToVote } from "../maps.ts";
 export class BunSQLiteVotesAdapter implements VotesDataAdapter {
   constructor(private db: Database) { }
 
-  public async voteUpThread(
-    accountId: string,
-    threadId: string,
-  ): Promise<Msg<Vote>> {
-    return this.createOrUpdateVote(accountId, threadId, null, "up");
-  }
-
-  public async voteDownThread(
-    accountId: string,
-    threadId: string,
-  ): Promise<Msg<Vote>> {
-    return this.createOrUpdateVote(accountId, threadId, null, "down");
-  }
-
-  public async voteUpReply(
-    accountId: string,
-    threadId: string,
-    replyId: string,
-  ): Promise<Msg<Vote>> {
-    return this.createOrUpdateVote(accountId, threadId, replyId, "up");
-  }
-
-  public async voteDownReply(
-    accountId: string,
-    threadId: string,
-    replyId: string,
-  ): Promise<Msg<Vote>> {
-    return this.createOrUpdateVote(accountId, threadId, replyId, "down");
-  }
-
-  private async createOrUpdateVote(
-    accountId: string,
-    threadId: string,
-    replyId: string | null,
-    direction: "up" | "down",
-  ): Promise<Msg<Vote>> {
+  public async create(opts: {
+    accountId: string;
+    threadId: string;
+    replyId?: string | null;
+    direction: "up" | "down";
+  }): Promise<Msg<Vote>> {
     try {
+      const { accountId, threadId, replyId = null, direction } = opts;
       const whereClauses = ["account_id = ?", "thread_id = ?"];
       const whereValues: any[] = [accountId, threadId];
 
@@ -96,7 +67,35 @@ export class BunSQLiteVotesAdapter implements VotesDataAdapter {
         error instanceof Error
           ? { error: error.message }
           : { error: String(error) };
-      return err("Failed to create or update vote", metadata);
+      return err("Failed to create vote", metadata);
+    }
+  }
+
+  public async update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>> {
+    try {
+      const updatedAt = Date.now();
+      const stmt = this.db.prepare(`
+        UPDATE votes
+        SET direction = ?, updated_at = ?
+        WHERE id = ?
+      `);
+      const result = stmt.run(direction, updatedAt, voteId);
+
+      if (result.changes === 0) {
+        return none("Vote not found");
+      }
+
+      const vote = this.db
+        .prepare("SELECT * FROM votes WHERE id = ?")
+        .get(voteId);
+      return some(mapDbToVote(vote));
+    } catch (error) {
+      console.log("VOTE_UPDATE", error);
+      const metadata =
+        error instanceof Error
+          ? { error: error.message }
+          : { error: String(error) };
+      return err("Failed to update vote", metadata);
     }
   }
 

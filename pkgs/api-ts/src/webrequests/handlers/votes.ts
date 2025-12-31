@@ -36,87 +36,53 @@ export async function getVote(
 	return msgToResponse(result);
 }
 
-export async function voteUpThread(
+export async function createVote(
 	anythreads: Anythreads,
 	request: Request,
 	_params: Record<string, string>,
 ): Promise<Response> {
 	const body = await parseBody(request);
 
-	if (!body.accountId || !body.threadId) {
-		return error("INVALID_REQUEST", "accountId and threadId are required", 400);
-	}
-
-	const result = await anythreads.votes.voteUpThread(
-		body.accountId,
-		body.threadId,
-	);
-
-	return msgToResponse(result);
-}
-
-export async function voteDownThread(
-	anythreads: Anythreads,
-	request: Request,
-	_params: Record<string, string>,
-): Promise<Response> {
-	const body = await parseBody(request);
-
-	if (!body.accountId || !body.threadId) {
-		return error("INVALID_REQUEST", "accountId and threadId are required", 400);
-	}
-
-	const result = await anythreads.votes.voteDownThread(
-		body.accountId,
-		body.threadId,
-	);
-
-	return msgToResponse(result);
-}
-
-export async function voteUpReply(
-	anythreads: Anythreads,
-	request: Request,
-	_params: Record<string, string>,
-): Promise<Response> {
-	const body = await parseBody(request);
-
-	if (!body.accountId || !body.threadId || !body.replyId) {
+	if (!body.accountId || !body.threadId || !body.direction) {
 		return error(
 			"INVALID_REQUEST",
-			"accountId, threadId, and replyId are required",
+			"accountId, threadId, and direction are required",
 			400,
 		);
 	}
 
-	const result = await anythreads.votes.voteUpReply(
-		body.accountId,
-		body.threadId,
-		body.replyId,
-	);
+	if (body.direction !== "up" && body.direction !== "down") {
+		return error("INVALID_REQUEST", "direction must be 'up' or 'down'", 400);
+	}
+
+	const result = await anythreads.votes.create({
+		accountId: body.accountId,
+		threadId: body.threadId,
+		replyId: body.replyId || null,
+		direction: body.direction,
+	});
 
 	return msgToResponse(result);
 }
 
-export async function voteDownReply(
+export async function updateVote(
 	anythreads: Anythreads,
 	request: Request,
-	_params: Record<string, string>,
+	params: Record<string, string>,
 ): Promise<Response> {
 	const body = await parseBody(request);
 
-	if (!body.accountId || !body.threadId || !body.replyId) {
-		return error(
-			"INVALID_REQUEST",
-			"accountId, threadId, and replyId are required",
-			400,
-		);
+	if (!body.direction) {
+		return error("INVALID_REQUEST", "direction is required", 400);
 	}
 
-	const result = await anythreads.votes.voteDownReply(
-		body.accountId,
-		body.threadId,
-		body.replyId,
+	if (body.direction !== "up" && body.direction !== "down") {
+		return error("INVALID_REQUEST", "direction must be 'up' or 'down'", 400);
+	}
+
+	const result = await anythreads.votes.update(
+		params.id || "",
+		body.direction,
 	);
 
 	return msgToResponse(result);

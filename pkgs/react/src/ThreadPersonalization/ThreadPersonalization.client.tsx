@@ -1,28 +1,31 @@
 "use client";
 
-import type { Anythreads } from "@anythreads/api";
+import type { PersonalizedThread } from "@anythreads/api/accounts";
+import type { Msg } from "@anythreads/api/msg";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext } from "react";
-import type { ThreadPersonalizationContext } from "./types";
 
-const ThreadPersonalizationCtx = createContext<ThreadPersonalizationContext>({
-  instance: undefined,
-  accountId: undefined,
-});
+type ThreadPersonalizationClientContext = {
+	msg: Msg<PersonalizedThread> | undefined;
+};
+
+const ThreadPersonalizationCtx =
+	createContext<ThreadPersonalizationClientContext>({
+		msg: undefined,
+	});
 
 export function useThreadPersonalization() {
-  const at = useContext(ThreadPersonalizationCtx);
-  return at;
+	const ctx = useContext(ThreadPersonalizationCtx);
+	return ctx;
 }
 
 export function Provider({
-  children,
-  instance,
-  accountId,
-}: PropsWithChildren<{ accountId?: string; instance: Anythreads }>) {
-  return (
-    <ThreadPersonalizationCtx.Provider value={{ instance, accountId }}>
-      {children}
-    </ThreadPersonalizationCtx.Provider>
-  );
+	children,
+	msg,
+}: PropsWithChildren<{ msg: Msg<PersonalizedThread> }>) {
+	return (
+		<ThreadPersonalizationCtx.Provider value={{ msg }}>
+			{children}
+		</ThreadPersonalizationCtx.Provider>
+	);
 }

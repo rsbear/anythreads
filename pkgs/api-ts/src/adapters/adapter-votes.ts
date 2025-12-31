@@ -1,18 +1,13 @@
 import type { Msg } from "../common/msg.ts";
 
 export interface VotesDataAdapter {
-	voteUpThread(accountId: string, threadId: string): Promise<Msg<Vote>>;
-	voteDownThread(accountId: string, threadId: string): Promise<Msg<Vote>>;
-	voteUpReply(
-		accountId: string,
-		threadId: string,
-		replyId: string,
-	): Promise<Msg<Vote>>;
-	voteDownReply(
-		accountId: string,
-		threadId: string,
-		replyId: string,
-	): Promise<Msg<Vote>>;
+	create(opts: {
+		accountId: string;
+		threadId: string;
+		replyId?: string | null;
+		direction: "up" | "down";
+	}): Promise<Msg<Vote>>;
+	update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>>;
 	delete(id: string): Promise<Msg<"ok">>;
 	findOne(id: string): Promise<Msg<Vote>>;
 	findMany(opts?: VotesFindManyOptions): Promise<Msg<Vote[]>>;

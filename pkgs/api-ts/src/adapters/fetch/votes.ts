@@ -10,47 +10,27 @@ import type {
 export class FetchVotesAdapter implements VotesDataAdapter {
 	constructor(private config: FetchConfig) {}
 
-	async voteUpThread(accountId: string, threadId: string): Promise<Msg<Vote>> {
-		return fetchRequest<Vote>(this.config, "/votes/thread/up", {
+	async create(opts: {
+		accountId: string;
+		threadId: string;
+		replyId?: string | null;
+		direction: "up" | "down";
+	}): Promise<Msg<Vote>> {
+		return fetchRequest<Vote>(this.config, "/votes/create", {
 			method: "POST",
-			body: { accountId, threadId },
+			body: opts,
 		});
 	}
 
-	async voteDownThread(
-		accountId: string,
-		threadId: string,
-	): Promise<Msg<Vote>> {
-		return fetchRequest<Vote>(this.config, "/votes/thread/down", {
-			method: "POST",
-			body: { accountId, threadId },
-		});
-	}
-
-	async voteUpReply(
-		accountId: string,
-		threadId: string,
-		replyId: string,
-	): Promise<Msg<Vote>> {
-		return fetchRequest<Vote>(this.config, "/votes/reply/up", {
-			method: "POST",
-			body: { accountId, threadId, replyId },
-		});
-	}
-
-	async voteDownReply(
-		accountId: string,
-		threadId: string,
-		replyId: string,
-	): Promise<Msg<Vote>> {
-		return fetchRequest<Vote>(this.config, "/votes/reply/down", {
-			method: "POST",
-			body: { accountId, threadId, replyId },
+	async update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>> {
+		return fetchRequest<Vote>(this.config, `/votes/${voteId}/update`, {
+			method: "PUT",
+			body: { direction },
 		});
 	}
 
 	async delete(id: string): Promise<Msg<"ok">> {
-		return fetchRequest<"ok">(this.config, `/votes/${id}`, {
+		return fetchRequest<"ok">(this.config, `/votes/${id}/delete`, {
 			method: "DELETE",
 		});
 	}

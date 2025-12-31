@@ -3,9 +3,9 @@ export type DateFmt = "distance" | "full";
 type Unit = "second" | "minute" | "hour" | "day" | "month" | "year";
 
 interface FormatDistanceOptions {
-  addSuffix?: boolean;
-  unit?: Unit;
-  roundingMethod?: "floor" | "ceil" | "round";
+	addSuffix?: boolean;
+	unit?: Unit;
+	roundingMethod?: "floor" | "ceil" | "round";
 }
 
 /**
@@ -24,104 +24,103 @@ interface FormatDistanceOptions {
  * // => "in 30 minutes"
  */
 export function formatDistance(
-  date: Date,
-  options: FormatDistanceOptions = {},
+	date: Date,
+	options: FormatDistanceOptions = {},
 ): string {
-  const { addSuffix = false, unit, roundingMethod = "round" } = options;
+	const { addSuffix = false, unit, roundingMethod = "round" } = options;
 
-  const now = new Date();
-  const diffMs = date.getTime() - now.getTime();
-  const isPast = diffMs < 0;
-  const absDiffMs = Math.abs(diffMs);
+	const now = new Date();
+	const diffMs = date.getTime() - now.getTime();
+	const isPast = diffMs < 0;
+	const absDiffMs = Math.abs(diffMs);
 
-  // Time unit definitions in milliseconds
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-  const month = day * 30.44; // Average month length
-  const year = day * 365.25; // Account for leap years
+	// Time unit definitions in milliseconds
+	const second = 1000;
+	const minute = second * 60;
+	const hour = minute * 60;
+	const day = hour * 24;
+	const month = day * 30.44; // Average month length
+	const year = day * 365.25; // Account for leap years
 
-  let value: number;
-  let unitName: Unit;
+	let value: number;
+	let unitName: Unit;
 
-  if (unit) {
-    // If unit is specified, use it
-    unitName = unit;
-    switch (unit) {
-      case "second":
-        value = absDiffMs / second;
-        break;
-      case "minute":
-        value = absDiffMs / minute;
-        break;
-      case "hour":
-        value = absDiffMs / hour;
-        break;
-      case "day":
-        value = absDiffMs / day;
-        break;
-      case "month":
-        value = absDiffMs / month;
-        break;
-      case "year":
-        value = absDiffMs / year;
-        break;
-    }
-  } else {
-    // Auto-select the most appropriate unit
-    if (absDiffMs < minute) {
-      value = absDiffMs / second;
-      unitName = "second";
-    } else if (absDiffMs < hour) {
-      value = absDiffMs / minute;
-      unitName = "minute";
-    } else if (absDiffMs < day) {
-      value = absDiffMs / hour;
-      unitName = "hour";
-    } else if (absDiffMs < month) {
-      value = absDiffMs / day;
-      unitName = "day";
-    } else if (absDiffMs < year) {
-      value = absDiffMs / month;
-      unitName = "month";
-    } else {
-      value = absDiffMs / year;
-      unitName = "year";
-    }
-  }
+	if (unit) {
+		// If unit is specified, use it
+		unitName = unit;
+		switch (unit) {
+			case "second":
+				value = absDiffMs / second;
+				break;
+			case "minute":
+				value = absDiffMs / minute;
+				break;
+			case "hour":
+				value = absDiffMs / hour;
+				break;
+			case "day":
+				value = absDiffMs / day;
+				break;
+			case "month":
+				value = absDiffMs / month;
+				break;
+			case "year":
+				value = absDiffMs / year;
+				break;
+		}
+	} else {
+		// Auto-select the most appropriate unit
+		if (absDiffMs < minute) {
+			value = absDiffMs / second;
+			unitName = "second";
+		} else if (absDiffMs < hour) {
+			value = absDiffMs / minute;
+			unitName = "minute";
+		} else if (absDiffMs < day) {
+			value = absDiffMs / hour;
+			unitName = "hour";
+		} else if (absDiffMs < month) {
+			value = absDiffMs / day;
+			unitName = "day";
+		} else if (absDiffMs < year) {
+			value = absDiffMs / month;
+			unitName = "month";
+		} else {
+			value = absDiffMs / year;
+			unitName = "year";
+		}
+	}
 
-  // Apply rounding method
-  let roundedValue: number;
-  switch (roundingMethod) {
-    case "floor":
-      roundedValue = Math.floor(value);
-      break;
-    case "ceil":
-      roundedValue = Math.ceil(value);
-      break;
-    case "round":
-    default:
-      roundedValue = Math.round(value);
-      break;
-  }
+	// Apply rounding method
+	let roundedValue: number;
+	switch (roundingMethod) {
+		case "floor":
+			roundedValue = Math.floor(value);
+			break;
+		case "ceil":
+			roundedValue = Math.ceil(value);
+			break;
+		default:
+			roundedValue = Math.round(value);
+			break;
+	}
 
-  // Handle zero case
-  if (roundedValue === 0) {
-    roundedValue = 1;
-  }
+	// Handle zero case
+	if (roundedValue === 0) {
+		roundedValue = 1;
+	}
 
-  // Format the unit name (singular vs plural)
-  const unitLabel = roundedValue === 1 ? unitName : `${unitName}s`;
+	// Format the unit name (singular vs plural)
+	const unitLabel = roundedValue === 1 ? unitName : `${unitName}s`;
 
-  // Build the result string
-  let result = `${roundedValue} ${unitLabel}`;
+	// Build the result string
+	let result = `${roundedValue} ${unitLabel}`;
 
-  if (addSuffix) {
-    result = isPast ? `${result} ago` : `in ${result}`;
-  }
+	if (addSuffix) {
+		result = isPast ? `${result} ago` : `in ${result}`;
+	}
 
-  return result;
+	return result;
 }
 
 // Example usage:
