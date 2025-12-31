@@ -2,273 +2,300 @@
 
 import type { VoteCount } from "@anythreads/api/threads";
 import type { PropsWithChildren } from "react";
-import { createContext, useContext, useOptimistic, useTransition } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAnythreadsBrowser } from "../Anythreads/Anythreads.browser";
 import type {
-  OptimisticVoteAction,
-  VoteState,
-  VotesContextValue,
+	InternalVoteState,
+	VoteState,
+	VotesContextValue,
 } from "./types";
 
 const VotesContext = createContext<VotesContextValue | null>(null);
 
 /**
- * Calculate optimistic vote count based on user action
+ * Calculate next vote state based on user action
  */
-function calculateOptimisticVote(
-  baseVote: VoteCount,
-  action: OptimisticVoteAction,
-): VoteCount {
-  const { upvotes, downvotes, total } = baseVote;
+function calculateNextState(
+	currentState: InternalVoteState,
+	action: "upvote" | "downvote",
+): InternalVoteState {
+	const { upvotes, downvotes, total } = currentState.voteCount;
+	const currentDirection = currentState.direction;
 
-  if (action.type === "upvote") {
-    if (action.currentDirection === null) {
-      // Create new upvote
-      return { upvotes: upvotes + 1, downvotes, total: total + 1 };
-    }
-    if (action.currentDirection === "up") {
-      // Toggle off upvote
-      return { upvotes: upvotes - 1, downvotes, total: total - 1 };
-    }
-    // Switch from downvote to upvote
-    return { upvotes: upvotes + 1, downvotes: downvotes - 1, total: total + 2 };
-  }
+	if (action === "upvote") {
+		if (currentDirection === null) {
+			return {
+				voteCount: { upvotes: upvotes + 1, downvotes, total: total + 1 },
+				direction: "up",
+			};
+		}
+		if (currentDirection === "up") {
+			return {
+				voteCount: { upvotes: upvotes - 1, downvotes, total: total - 1 },
+				direction: null,
+			};
+		}
+		return {
+			voteCount: {
+				upvotes: upvotes + 1,
+				downvotes: downvotes - 1,
+				total: total + 2,
+			},
+			direction: "up",
+		};
+	}
 
-  // action.type === "downvote"
-  if (action.currentDirection === null) {
-    // Create new downvote
-    return { upvotes, downvotes: downvotes + 1, total: total - 1 };
-  }
-  if (action.currentDirection === "down") {
-    // Toggle off downvote
-    return { upvotes, downvotes: downvotes - 1, total: total + 1 };
-  }
-  // Switch from upvote to downvote
-  return { upvotes: upvotes - 1, downvotes: downvotes + 1, total: total - 2 };
+	// action === "downvote"
+	if (currentDirection === null) {
+		return {
+			voteCount: { upvotes, downvotes: downvotes + 1, total: total - 1 },
+			direction: "down",
+		};
+	}
+	if (currentDirection === "down") {
+		return {
+			voteCount: { upvotes, downvotes: downvotes - 1, total: total + 1 },
+			direction: null,
+		};
+	}
+	return {
+		voteCount: {
+			upvotes: upvotes - 1,
+			downvotes: downvotes + 1,
+			total: total - 2,
+		},
+		direction: "down",
+	};
 }
 
 /**
  * Shared Provider for Votes context
  */
 export function Provider({
-  children,
-  value,
-}: PropsWithChildren<{ value: VotesContextValue }>) {
-  const baseVote = value.vote || { upvotes: 0, downvotes: 0, total: 0 };
-  const [isPending, startTransition] = useTransition();
-  const [optimisticVote, setOptimisticVote] = useOptimistic(
-    baseVote,
-    calculateOptimisticVote,
-  );
+	children,
+	value,
+}: PropsWithChildren<{ value: Omit<VotesContextValue, 'currentVoteCount' | 'currentDirection' | 'isPending' | 'handleUpvote' | 'handleDownvote'> }>) {
+	const [state, setState] = useState<InternalVoteState>({
+		voteCount: value.voteCount || { upvotes: 0, downvotes: 0, total: 0 },
+		direction: value.vote?.direction ?? null,
+	});
+	const [isPending, setIsPending] = useState(false);
+	const anythreads = useAnythreadsBrowser();
 
-  const dispatchOptimistic = (action: OptimisticVoteAction) => {
-    startTransition(() => {
-      setOptimisticVote(action);
-    });
-  };
+	// Sync with props when they change from server
+	useEffect(() => {
+		setState({
+			voteCount: value.voteCount || { upvotes: 0, downvotes: 0, total: 0 },
+			direction: value.vote?.direction ?? null,
+		});
+	}, [value.voteCount, value.vote?.direction]);
 
-  const contextValue: VotesContextValue = {
-    ...value,
-    optimisticVote,
-    isPending,
-    dispatchOptimistic,
-  };
+	const handleVote = useCallback(async (type: "upvote" | "downvote") => {
+		if (!value.accountId) {
+			console.warn(`No accountId available for ${type}`);
+			return;
+		}
 
-  return (
-    <VotesContext.Provider value={contextValue}>
-      {children}
-    </VotesContext.Provider>
-  );
+		const prevState = state;
+		const nextState = calculateNextState(prevState, type);
+		
+		// Capture these for the API calls
+		const currentDirection = prevState.direction;
+		const voteId = value.vote?.id;
+
+		setState(nextState);
+		setIsPending(true);
+
+		try {
+			if (type === "upvote") {
+				if (!voteId) {
+					await anythreads.votes.create({
+						accountId: value.accountId,
+						threadId: value.threadId,
+						replyId: value.replyId ?? undefined,
+						direction: "up",
+					});
+				} else if (currentDirection === "up") {
+					await anythreads.votes.delete(voteId);
+				} else {
+					await anythreads.votes.update(voteId, "up");
+				}
+			} else {
+				// downvote
+				if (!voteId) {
+					await anythreads.votes.create({
+						accountId: value.accountId,
+						threadId: value.threadId,
+						replyId: value.replyId ?? undefined,
+						direction: "down",
+					});
+				} else if (currentDirection === "down") {
+					await anythreads.votes.delete(voteId);
+				} else {
+					await anythreads.votes.update(voteId, "down");
+				}
+			}
+		} catch (error) {
+			console.error(`Failed to ${type}:`, error);
+			setState(prevState); // Revert on error
+		} finally {
+			setIsPending(false);
+		}
+	}, [value, state, anythreads]);
+
+	const handleUpvote = useCallback(() => handleVote("upvote"), [handleVote]);
+	const handleDownvote = useCallback(() => handleVote("downvote"), [handleVote]);
+
+	const contextValue: VotesContextValue = {
+		...value,
+		currentVoteCount: state.voteCount,
+		currentDirection: state.direction,
+		isPending,
+		handleUpvote,
+		handleDownvote,
+	};
+
+	return (
+		<VotesContext.Provider value={contextValue}>
+			{children}
+		</VotesContext.Provider>
+	);
 }
 
 /**
  * Hook to get votes context
  */
 function useVotesContext(): VotesContextValue {
-  const ctx = useContext(VotesContext);
-  if (!ctx) {
-    throw new Error("Votes components must be used within Votes.Root");
-  }
-  return ctx;
+	const ctx = useContext(VotesContext);
+	if (!ctx) {
+		throw new Error("Votes components must be used within Votes.Root");
+	}
+	return ctx;
 }
 
 /**
  * Display total vote count
  */
 export function Total({
-  children,
-  className,
+	children,
+	className,
 }: {
-  children?:
-  | React.ReactNode
-  | ((state: { total: number; isPending: boolean }) => React.ReactNode);
-  className?: string;
+	children?:
+		| React.ReactNode
+		| ((state: { total: number; isPending: boolean }) => React.ReactNode);
+	className?: string;
 }) {
-  const ctx = useVotesContext();
-  const total = ctx.optimisticVote?.total ?? ctx.voteCount?.total ?? 0;
-  const isPending = ctx.isPending ?? false;
+	const ctx = useVotesContext();
+	const total = ctx.currentVoteCount.total;
+	const isPending = ctx.isPending;
 
-  if (typeof children === "function") {
-    return <>{children({ total, isPending })}</>;
-  }
+	if (typeof children === "function") {
+		return <>{children({ total, isPending })}</>;
+	}
 
-  if (className) {
-    return <span className={className}>{children ?? total}</span>;
-  }
+	if (className) {
+		return <span className={className}>{children ?? total}</span>;
+	}
 
-  return <>{children ?? total}</>;
+	return <>{children ?? total}</>;
 }
 
 /**
  * Upvote button with render prop pattern
  */
 export function UpvoteButton({
-  children,
-  className,
+	children,
+	className,
 }: {
-  children?: React.ReactNode | ((state: VoteState) => React.ReactNode);
-  className?: string;
+	children?: React.ReactNode | ((state: VoteState) => React.ReactNode);
+	className?: string;
 }) {
-  const [_, startTransition] = useTransition();
-  const ctx = useVotesContext();
-  const anythreads = useAnythreadsBrowser();
+	const ctx = useVotesContext();
 
-  const handleClick = () => {
-    if (!ctx.accountId) {
-      console.warn("No accountId available for upvote");
-      return;
-    }
+	const state: VoteState = {
+		isUpvoted: ctx.currentDirection === "up",
+		isDownvoted: ctx.currentDirection === "down",
+		hasVoted: ctx.currentDirection !== null,
+		isPending: ctx.isPending,
+		total: ctx.currentVoteCount.total,
+	};
 
-    const currentDirection = ctx.vote?.direction ?? undefined;
-    const voteId = ctx.vote?.id ?? undefined;
+	if (typeof children === "function") {
+		return (
+			<button type="button" onClick={ctx.handleUpvote} className={className}>
+				{children(state)}
+			</button>
+		);
+	}
 
-    // Dispatch optimistic update immediately
-    ctx.dispatchOptimistic?.({
-      type: "upvote",
-      currentDirection: currentDirection ?? null,
-    });
-
-    // Then run vote logic
-    startTransition(async () => {
-      try {
-        if (!voteId) {
-          // No existing vote, create upvote
-          await anythreads.votes.create({
-            accountId: ctx.accountId as string,
-            threadId: ctx.threadId,
-            replyId: ctx.replyId ?? undefined,
-            direction: "up",
-          });
-        } else if (currentDirection === "up") {
-          // Toggle off upvote
-          await anythreads.votes.delete(voteId);
-        } else if (currentDirection === "down") {
-          // Switch from downvote to upvote
-          await anythreads.votes.update(voteId, "up");
-        }
-      } catch (error) {
-        console.error("Failed to upvote:", error);
-        // TODO: implement error toast
-      }
-    });
-  };
-
-  const state: VoteState = {
-    isUpvoted: ctx.vote?.direction === "up",
-    isDownvoted: ctx.vote?.direction === "down",
-    hasVoted: !!ctx.vote,
-    isPending: ctx.isPending ?? false,
-    total: ctx.optimisticVote?.total ?? ctx.vote?.total ?? 0,
-  };
-
-  if (typeof children === "function") {
-    return (
-      <button type="button" onClick={handleClick} className={className}>
-        {children(state)}
-      </button>
-    );
-  }
-
-  return (
-    <button type="button" onClick={handleClick} className={className}>
-      {children || "↑"}
-    </button>
-  );
+	return (
+		<button type="button" onClick={ctx.handleUpvote} className={className}>
+			{children || "↑"}
+		</button>
+	);
 }
 
 /**
  * Downvote button with render prop pattern
  */
 export function DownvoteButton({
-  children,
-  className,
+	children,
+	className,
 }: {
-  children?: React.ReactNode | ((state: VoteState) => React.ReactNode);
-  className?: string;
+	children?: React.ReactNode | ((state: VoteState) => React.ReactNode);
+	className?: string;
 }) {
-  const [_, startTransition] = useTransition();
-  const ctx = useVotesContext();
-  const anythreads = useAnythreadsBrowser();
+	const ctx = useVotesContext();
 
-  const handleClick = () => {
-    if (!ctx.accountId) {
-      console.warn("No accountId available for downvote");
-      return;
-    }
+	const state: VoteState = {
+		isUpvoted: ctx.currentDirection === "up",
+		isDownvoted: ctx.currentDirection === "down",
+		hasVoted: ctx.currentDirection !== null,
+		isPending: ctx.isPending,
+		total: ctx.currentVoteCount.total,
+	};
 
-    const currentDirection = ctx.vote?.direction ?? undefined;
-    const voteId = ctx.vote?.id ?? undefined;
+	if (typeof children === "function") {
+		return (
+			<button type="button" onClick={ctx.handleDownvote} className={className}>
+				{children(state)}
+			</button>
+		);
+	}
 
-    // Dispatch optimistic update immediately
-    ctx.dispatchOptimistic?.({
-      type: "downvote",
-      currentDirection: currentDirection ?? null,
-    });
+	return (
+		<button type="button" onClick={ctx.handleDownvote} className={className}>
+			{children || "↓"}
+		</button>
+	);
+}
 
-    // Then run vote logic
-    startTransition(async () => {
-      try {
-        if (!voteId) {
-          // No existing vote, create downvote
-          await anythreads.votes.create({
-            accountId: ctx.accountId as string,
-            threadId: ctx.threadId,
-            replyId: ctx.replyId ?? undefined,
-            direction: "down",
-          });
-        } else if (currentDirection === "down") {
-          // Toggle off downvote
-          await anythreads.votes.delete(voteId);
-        } else if (currentDirection === "up") {
-          // Switch from upvote to downvote
-          await anythreads.votes.update(voteId, "down");
-        }
-      } catch (error) {
-        console.error("Failed to downvote:", error);
-        // TODO: implement error toast
-      }
-    });
-  };
+/**
+ * Hook to get current vote state
+ */
+export function useVoteState(): VoteState {
+	const ctx = useVotesContext();
+	return {
+		isUpvoted: ctx.currentDirection === "up",
+		isDownvoted: ctx.currentDirection === "down",
+		hasVoted: ctx.currentDirection !== null,
+		isPending: ctx.isPending,
+		total: ctx.currentVoteCount.total,
+	};
+}
 
-  const state: VoteState = {
-    isUpvoted: ctx.vote?.direction === "up",
-    isDownvoted: ctx.vote?.direction === "down",
-    hasVoted: !!ctx.vote,
-    isPending: ctx.isPending ?? false,
-    total: ctx.optimisticVote?.total ?? ctx.vote?.total ?? 0,
-  };
+/**
+ * Hook to get upvote handler function
+ */
+export function useUpvote(): () => void {
+	const ctx = useVotesContext();
+	return ctx.handleUpvote;
+}
 
-  if (typeof children === "function") {
-    return (
-      <button type="button" onClick={handleClick} className={className}>
-        {children(state)}
-      </button>
-    );
-  }
-
-  return (
-    <button type="button" onClick={handleClick} className={className}>
-      {children || "↓"}
-    </button>
-  );
+/**
+ * Hook to get downvote handler function
+ */
+export function useDownvote(): () => void {
+	const ctx = useVotesContext();
+	return ctx.handleDownvote;
 }

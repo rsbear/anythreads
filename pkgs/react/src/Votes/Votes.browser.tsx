@@ -41,7 +41,8 @@ export function Root({
 		accountId,
 		threadId: thread?.id || "",
 		replyId: reply?.id || null,
-		vote: currentVote ? { ...voteCount, ...currentVote } : voteCount,
+		vote: currentVote,
+		voteCount,
 	};
 
 	if (!className) {
@@ -58,4 +59,11 @@ export function Root({
 }
 
 // Re-export shared components for browser usage
-export { DownvoteButton, Total, UpvoteButton } from "./Votes.shared";
+export {
+	DownvoteButton,
+	Total,
+	UpvoteButton,
+	useDownvote,
+	useUpvote,
+	useVoteState,
+} from "./Votes.shared";

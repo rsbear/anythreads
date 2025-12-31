@@ -5,30 +5,34 @@ import type { Vote } from "@anythreads/api/votes";
  * Vote state passed to render prop children
  */
 export type VoteState = {
-  isUpvoted: boolean;
-  isDownvoted: boolean;
-  hasVoted: boolean;
-  isPending: boolean;
-  total: number;
+	isUpvoted: boolean;
+	isDownvoted: boolean;
+	hasVoted: boolean;
+	isPending: boolean;
+	total: number;
 };
 
 /**
- * Optimistic vote action types
+ * Combined vote state
  */
-export type OptimisticVoteAction =
-  | { type: "upvote"; currentDirection: "up" | "down" | null }
-  | { type: "downvote"; currentDirection: "up" | "down" | null };
+export type InternalVoteState = {
+	voteCount: VoteCount;
+	direction: "up" | "down" | null;
+};
 
 /**
  * Context value for Votes components
  */
 export type VotesContextValue = {
-  accountId: string | undefined;
-  threadId: string;
-  replyId: string | null;
-  vote: Partial<Vote> | undefined;
-  voteCount: VoteCount;
-  optimisticVote?: VoteCount;
-  isPending?: boolean;
-  dispatchOptimistic?: (action: OptimisticVoteAction) => void;
+	accountId: string | undefined;
+	threadId: string;
+	replyId: string | null;
+	vote: Partial<Vote> | undefined;
+	voteCount: VoteCount;
+	// Current state
+	currentVoteCount: VoteCount;
+	currentDirection: "up" | "down" | null;
+	isPending: boolean;
+	handleUpvote: () => Promise<void>;
+	handleDownvote: () => Promise<void>;
 };
