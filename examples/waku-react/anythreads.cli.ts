@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 
-import { setupAnythreads } from '@anythreads/api/cli';
+import { setupAnythreads } from "@anythreads/api/cli";
 
 const db = new Database("test.sqlite");
 

@@ -1,8 +1,8 @@
-import '../styles.css';
+import "../styles.css";
 
-import type { ReactNode } from 'react';
-import { Footer } from '../components/footer';
-import { Header } from '../components/header';
+import type { ReactNode } from "react";
+import { Footer } from "../components/footer";
+import { Header } from "../components/header";
 
 type RootLayoutProps = { children: ReactNode };
 
@@ -31,8 +31,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
 const getData = async () => {
   const data = {
-    description: 'An internet website!',
-    icon: '/images/favicon.png',
+    description: "An internet website!",
+    icon: "/images/favicon.png",
   };
 
   return data;
@@ -40,6 +40,6 @@ const getData = async () => {
 
 export const getConfig = async () => {
   return {
-    render: 'static',
+    render: "static",
   } as const;
 };

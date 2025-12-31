@@ -1,1 +1,27 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+@scope (.reply) {
+  .reply {
+    margin-left: 1rem;
+  }
+  .reply-contents {
+    padding: 1rem;
+    margin: 0.25rem 0 0.25rem 0;
+    background-color: ghostwhite;
+    border-radius: 0.5rem;
+  }
+  .account-block {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+  }
+  .votes-block {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+}
