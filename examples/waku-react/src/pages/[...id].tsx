@@ -1,9 +1,9 @@
 import { createAnythreads } from "@anythreads/api";
-import type { PersonalizedThread } from "@anythreads/api/accounts";
 import type { ReplyWithNested } from "@anythreads/api/threads";
 import { Anythreads } from "@anythreads/react/browser";
 import {
   Account,
+  CreateReply,
   CurrentAccount,
   Reply,
   Thread,
@@ -28,24 +28,22 @@ export default async function HomePage({ id }) {
   return (
     <Anythreads.Provider url="http://localhost:3001/api">
       <CurrentAccount.Provider accountId="account_1">
-        <div style={{ display: "flex" }}>
-          <div style={{ width: "33%" }}>
+        <div className="app">
+          <div className="left-col">
             {msg?.kind === "some" &&
               msg.value.map((thread) => (
-                <Thread.Root key={thread.id} thread={thread}>
-                  <Link to={`/${thread.id}`}>
-                    <Thread.Title />
-                  </Link>
-                  <Thread.Body />
-                </Thread.Root>
+                <div key={thread.id}>
+                  <Thread.Root key={thread.id} thread={thread}>
+                    <Link to={`/${thread.id}`} className="text-blue-500 underline">
+                      <Thread.Title />
+                    </Link>
+                    <Thread.Body />
+                  </Thread.Root>
+                </div>
               ))}
           </div>
 
-          {id[0] && (
-            <div style={{ width: "66%", display: "flex", flexDirection: "column" }}>
-              <ThreadIdSlice id={id[0]} />
-            </div>
-          )}
+          <div className="right-col">{id[0] && <ThreadIdSlice id={id[0]} />}</div>
         </div>
       </CurrentAccount.Provider>
     </Anythreads.Provider>
@@ -60,23 +58,29 @@ async function ThreadIdSlice({ id }) {
   });
 
   return (
-    <div>
+    <>
       <h1>ThreadIdSlice: {id}</h1>
       {msg.kind === "some" && (
-        <div style={{ width: "66%", display: "flex", flexDirection: "column" }}>
-          <Thread.Root thread={msg.value.thread}>
-            <ThreadPersonalization.Provider msg={personalThread}>
+        <Thread.Root thread={msg.value.thread}>
+          <ThreadPersonalization.Provider msg={personalThread}>
+            <CreateReply.Provider>
               <Thread.Title />
               {msg.value.replies.map((reply) => (
                 <RecursiveReply key={reply.id} reply={reply} />
               ))}
               <ThreadPersonalization.None />
               <ThreadPersonalization.Err />
-            </ThreadPersonalization.Provider>
-          </Thread.Root>
-        </div>
+              <div className="form-container">
+                <CreateReply.Form>
+                  <CreateReply.Textarea />
+                  <CreateReply.SubmitButton>submit</CreateReply.SubmitButton>
+                </CreateReply.Form>
+              </div>
+            </CreateReply.Provider>
+          </ThreadPersonalization.Provider>
+        </Thread.Root>
       )}
-    </div>
+    </>
   );
 }
 
