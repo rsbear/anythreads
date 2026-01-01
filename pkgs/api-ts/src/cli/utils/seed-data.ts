@@ -1,4 +1,4 @@
-import type { Account, Reply, Thread, Vote } from "../../api/schema";
+import type { Account, Reply, Thread, Vote } from "../../schema";
 
 export function generateAccount(
 	index: number,
@@ -8,6 +8,7 @@ export function generateAccount(
 		upstreamId: `upstream_${index}`,
 		username: `user${index}`,
 		email: `user${index}@example.com`,
+		avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${index}`,
 		banned: false,
 		badge: null,
 		extras: {},

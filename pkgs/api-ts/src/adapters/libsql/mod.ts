@@ -1,4 +1,4 @@
-import { type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 import type { Anythreads } from "../mod";
 import { LibSQLAccountsAdapter } from "./accounts";
 import { LibSQLRepliesAdapter } from "./replies";

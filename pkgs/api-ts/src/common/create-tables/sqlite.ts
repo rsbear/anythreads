@@ -4,6 +4,7 @@ export const createAccountsStr = `
       upstream_id TEXT,
       username TEXT NOT NULL,
       email TEXT,
+      avatar TEXT,
       banned INTEGER NOT NULL DEFAULT 0,
       badge TEXT,
       banned_at INTEGER,

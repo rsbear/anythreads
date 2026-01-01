@@ -5,6 +5,7 @@
 			"upstreamId": "upstream_1",
 			"username": "alice",
 			"email": "alice@example.com",
+			"avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=alice",
 			"badge": "moderator"
 		},
 		{
@@ -12,6 +13,7 @@
 			"upstreamId": "upstream_2",
 			"username": "bob",
 			"email": "bob@example.com",
+			"avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=bob",
 			"badge": null
 		},
 		{
@@ -19,6 +21,7 @@
 			"upstreamId": "upstream_3",
 			"username": "charlie",
 			"email": "charlie@example.com",
+			"avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=charlie",
 			"badge": "contributor"
 		}
 	],

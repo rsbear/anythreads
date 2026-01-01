@@ -1,12 +1,12 @@
-import { createClient } from "@libsql/client";
 import { afterEach, beforeAll, describe } from "bun:test";
+import { createClient } from "@libsql/client";
+import { setupAnythreads } from "../cli/mod.ts";
 import {
 	createAccountsStr,
 	createRepliesStr,
 	createThreadsStr,
 	createVotesStr,
 } from "../common/create-tables/sqlite.ts";
-import { setupAnythreads } from "../cli/mod.ts";
 import { flowCoverage } from "./flow-coverage.js";
 
 describe("LibSQL Adapter - Full Coverage", () => {
@@ -20,12 +20,15 @@ describe("LibSQL Adapter - Full Coverage", () => {
 	});
 
 	afterEach(async () => {
-		await client.batch([
-			"DELETE FROM votes",
-			"DELETE FROM replies",
-			"DELETE FROM threads",
-			"DELETE FROM accounts",
-		], "write");
+		await client.batch(
+			[
+				"DELETE FROM votes",
+				"DELETE FROM replies",
+				"DELETE FROM threads",
+				"DELETE FROM accounts",
+			],
+			"write",
+		);
 	});
 
 	const setup = setupAnythreads({ libsql: client });

@@ -9,7 +9,9 @@ export interface AccountsDataAdapter {
 	unban: (id: string) => Promise<Msg<Account>>;
 	findOne: (id: string) => Promise<Msg<Account>>;
 	findMany: (opts: AccountsFindManyOptions) => Promise<Msg<Account[]>>;
-	personalizedThread: (opts: PersonalizedThreadInput) => Promise<Msg<PersonalizedThread>>;
+	personalizedThread: (
+		opts: PersonalizedThreadInput,
+	) => Promise<Msg<PersonalizedThread>>;
 }
 
 /**
@@ -23,6 +25,7 @@ export type Account = {
 	upstreamId: string | null;
 	username: string;
 	email: string | null;
+	avatar: string | null;
 	badge: string | null;
 	banned: boolean;
 	bannedAt: Date | null;
@@ -37,6 +40,7 @@ export type Account = {
 export type AccountCreateOrUpdate = {
 	username: string;
 	email?: string;
+	avatar?: string;
 	upstreamId?: string;
 	badge?: string;
 	extras?: Record<string, any>;
@@ -45,6 +49,7 @@ export type AccountCreateOrUpdate = {
 export type AccountUpdate = {
 	username?: string;
 	email?: string;
+	avatar?: string;
 	upstreamId?: string;
 	badge?: string;
 	extras?: Record<string, any>;

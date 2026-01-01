@@ -23,6 +23,7 @@ const TABLE_SCHEMAS_POSTGRES: Record<TableName, string> = {
       upstream_id TEXT NOT NULL,
       username TEXT NOT NULL,
       email TEXT,
+      avatar TEXT,
       banned BOOLEAN NOT NULL DEFAULT false,
       badge TEXT,
       banned_at BIGINT,

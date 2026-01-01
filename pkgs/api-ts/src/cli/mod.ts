@@ -1,5 +1,5 @@
-import { type Client as LibSQLClient } from "@libsql/client";
 import type { Database } from "bun:sqlite";
+import type { Client as LibSQLClient } from "@libsql/client";
 
 import type { Anythreads } from "./../mod.ts";
 

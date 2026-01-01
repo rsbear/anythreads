@@ -74,7 +74,10 @@ export class PostgresVotesAdapter implements VotesDataAdapter {
 		}
 	}
 
-	public async update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>> {
+	public async update(
+		voteId: string,
+		direction: "up" | "down",
+	): Promise<Msg<Vote>> {
 		try {
 			const updatedAt = Date.now();
 

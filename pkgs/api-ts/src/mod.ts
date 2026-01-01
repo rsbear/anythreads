@@ -1,8 +1,8 @@
-import { type Client as LibSQLClient } from "@libsql/client";
 import type { Database } from "bun:sqlite";
-import { createLibSQLAdapter } from "./adapters/libsql/mod.ts";
+import type { Client as LibSQLClient } from "@libsql/client";
 import { createBunSQLiteAdapter } from "./adapters/bunsqlite/mod.ts";
 import { createFetchAdapter } from "./adapters/fetch/mod.ts";
+import { createLibSQLAdapter } from "./adapters/libsql/mod.ts";
 import type { Anythreads } from "./adapters/mod.ts";
 import { createPostgresAdapter } from "./adapters/postgres/mod.ts";
 

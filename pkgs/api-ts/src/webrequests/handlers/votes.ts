@@ -80,10 +80,7 @@ export async function updateVote(
 		return error("INVALID_REQUEST", "direction must be 'up' or 'down'", 400);
 	}
 
-	const result = await anythreads.votes.update(
-		params.id || "",
-		body.direction,
-	);
+	const result = await anythreads.votes.update(params.id || "", body.direction);
 
 	return msgToResponse(result);
 }

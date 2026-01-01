@@ -8,14 +8,14 @@
 			"types": "./src/mod.ts",
 			"default": "./src/mod.ts"
 		},
-	"./accounts": {
-		"types": "./src/adapters/adapter-accounts.ts",
-		"default": "./src/adapters/adapter-accounts.ts"
-	},
-	"./replies": {
-		"types": "./src/adapters/adapter-replies.ts",
-		"default": "./src/adapters/adapter-replies.ts"
-	},
+		"./accounts": {
+			"types": "./src/adapters/adapter-accounts.ts",
+			"default": "./src/adapters/adapter-accounts.ts"
+		},
+		"./replies": {
+			"types": "./src/adapters/adapter-replies.ts",
+			"default": "./src/adapters/adapter-replies.ts"
+		},
 		"./threads": {
 			"types": "./src/adapters/adapter-threads.ts",
 			"default": "./src/adapters/adapter-threads.ts"

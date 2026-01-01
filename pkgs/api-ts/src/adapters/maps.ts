@@ -27,6 +27,7 @@ export function mapDbToAccount(row: any): Account {
 		upstreamId: row.upstream_id,
 		username: row.username,
 		email: row.email,
+		avatar: row.avatar,
 		badge: row.badge,
 		banned: row.banned === 1 || row.banned === true,
 		bannedAt: row.banned_at ? new Date(row.banned_at) : null,
@@ -63,6 +64,7 @@ export function maskDeletedAccount(account: Account): Account {
 			...account,
 			username: "[deleted]",
 			email: null,
+			avatar: null,
 			badge: null,
 			extras: {},
 		};

@@ -1,12 +1,12 @@
 import { Database } from "bun:sqlite";
 import { afterEach, describe } from "bun:test";
+import { setupAnythreads } from "../cli/mod.ts";
 import {
 	createAccountsStr,
 	createRepliesStr,
 	createThreadsStr,
 	createVotesStr,
 } from "../common/create-tables/sqlite.ts";
-import { setupAnythreads } from "../cli/mod.ts";
 import { flowCoverage } from "./flow-coverage.js";
 
 describe("BunSQLite Adapter - Full Coverage", () => {

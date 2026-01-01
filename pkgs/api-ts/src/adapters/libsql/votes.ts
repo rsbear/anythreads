@@ -1,4 +1,4 @@
-import { type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
@@ -75,7 +75,10 @@ export class LibSQLVotesAdapter implements VotesDataAdapter {
 		}
 	}
 
-	public async update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>> {
+	public async update(
+		voteId: string,
+		direction: "up" | "down",
+	): Promise<Msg<Vote>> {
 		try {
 			const updatedAt = Date.now();
 			const result = await this.client.execute({

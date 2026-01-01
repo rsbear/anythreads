@@ -1,4 +1,4 @@
-import { type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 import { createId } from "../../common/create-id.ts";
 import { err, type Msg, none, some } from "../../common/msg.ts";
 import type {
