@@ -8,8 +8,11 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useAnythreadsBrowser } from "../Anythreads/Anythreads.browser";
 import type { InternalVoteState, VoteState, VotesContextValue } from "./types";
+import { useAnythreadsBrowser } from "../AnythreadsService.browser";
+import { useCurrentAccount } from "../CurrentAccount.browser";
+import { useThread } from "../Thread/Thread.browser";
+import { useReply } from "../Reply/Reply.browser";
 
 const VotesContext = createContext<VotesContextValue | null>(null);
 
@@ -92,6 +95,10 @@ export function Provider({
   const [isPending, setIsPending] = useState(false);
   const anythreads = useAnythreadsBrowser();
 
+  const { accountId } = useCurrentAccount();
+  const thread = useThread();
+  const reply = useReply();
+
   // Sync with props when they change from server
   useEffect(() => {
     setState({
@@ -102,7 +109,7 @@ export function Provider({
 
   const handleVote = useCallback(
     async (type: "upvote" | "downvote") => {
-      if (!value.accountId) {
+      if (!accountId) {
         console.warn(`No accountId available for ${type}`);
         return;
       }
@@ -121,9 +128,9 @@ export function Provider({
         if (type === "upvote") {
           if (!voteId) {
             await anythreads.votes.create({
-              accountId: value.accountId,
-              threadId: value.threadId,
-              replyId: value.replyId ?? undefined,
+              accountId: accountId,
+              threadId: thread.id,
+              replyId: reply.id ?? undefined,
               direction: "up",
             });
           } else if (currentDirection === "up") {
@@ -135,9 +142,9 @@ export function Provider({
           // downvote
           if (!voteId) {
             await anythreads.votes.create({
-              accountId: value.accountId,
-              threadId: value.threadId,
-              replyId: value.replyId ?? undefined,
+              accountId: accountId,
+              threadId: thread.id,
+              replyId: reply.id ?? undefined,
               direction: "down",
             });
           } else if (currentDirection === "down") {
@@ -153,7 +160,7 @@ export function Provider({
         setIsPending(false);
       }
     },
-    [value, state, anythreads],
+    [value, state, anythreads, accountId, thread, reply],
   );
 
   const handleUpvote = useCallback(() => handleVote("upvote"), [handleVote]);

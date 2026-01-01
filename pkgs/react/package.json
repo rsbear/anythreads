@@ -4,13 +4,7 @@
 	"module": "index.ts",
 	"exports": {
 		".": {
-			"default": "./src/index.ts"
-		},
-		"./server": {
-			"default": "./src/server.ts"
-		},
-		"./browser": {
-			"default": "./src/browser.ts"
+			"default": "./src/mod.ts"
 		}
 	},
 	"devDependencies": {

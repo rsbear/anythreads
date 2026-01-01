@@ -1,49 +1,49 @@
 "use client";
 
-import { Votes } from "@anythreads/react/server";
+import { Vote } from "@anythreads/react";
 import { IconDownArrow, IconUpArrow } from "../components/icons";
 
 // Render props pattern
 export function UpvoteBtn() {
   return (
-    <Votes.UpvoteButton>
+    <Vote.UpvoteButton>
       {(state) => (
         <span style={{ color: state.isUpvoted ? "orange" : "gray" }}>
           <IconUpArrow />
         </span>
       )}
-    </Votes.UpvoteButton>
+    </Vote.UpvoteButton>
   );
 }
 
 export function Total() {
   return (
-    <Votes.Total>
+    <Vote.Total>
       {(state) => (
         <span className={state.isPending ? "pending" : ""}>
           {state.total} {state.isPending && "..."}
         </span>
       )}
-    </Votes.Total>
+    </Vote.Total>
   );
 }
 
 export function DownvoteBtn() {
   return (
-    <Votes.DownvoteButton>
+    <Vote.DownvoteButton>
       {(state) => (
         <span style={{ color: state.isDownvoted ? "orange" : "gray" }}>
           <IconDownArrow />
         </span>
       )}
-    </Votes.DownvoteButton>
+    </Vote.DownvoteButton>
   );
 }
 
 // Hook-based pattern
 export function UpvoteBtnHook() {
-  const state = Votes.useVoteState();
-  const handleUpvote = Votes.useUpvote();
+  const state = Vote.useVoteState();
+  const handleUpvote = Vote.useUpvote();
 
   return (
     <button type="button" onClick={handleUpvote}>
@@ -55,7 +55,7 @@ export function UpvoteBtnHook() {
 }
 
 export function TotalHook() {
-  const state = Votes.useVoteState();
+  const state = Vote.useVoteState();
 
   return (
     <span className={state.isPending ? "pending" : ""}>
@@ -65,8 +65,8 @@ export function TotalHook() {
 }
 
 export function DownvoteBtnHook() {
-  const state = Votes.useVoteState();
-  const handleDownvote = Votes.useDownvote();
+  const state = Vote.useVoteState();
+  const handleDownvote = Vote.useDownvote();
 
   return (
     <button type="button" onClick={handleDownvote}>

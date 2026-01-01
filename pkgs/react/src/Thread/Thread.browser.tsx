@@ -1,50 +1,31 @@
 "use client";
+
 import type { Thread } from "@anythreads/api/threads";
+import * as React from "react";
+import { Body, Title } from "./composables.tsx";
 
-import { createContext, type PropsWithChildren, useContext } from "react";
+const ThreadCtx = React.createContext<Thread | undefined>(undefined);
 
-const ThreadCtx = createContext<Thread | undefined>(undefined);
-
-export function useThread() {
-	const thread = useContext(ThreadCtx);
-	if (!thread) {
-		throw new Error("useThread must be used within a ThreadProvider");
-	}
-	return thread;
-}
-
-export function Root({
-	children,
-	thread,
-}: PropsWithChildren<{ thread: Thread }>) {
-	return <ThreadCtx.Provider value={thread}>{children}</ThreadCtx.Provider>;
+export function useThread(): Thread {
+  const thread = React.useContext(ThreadCtx);
+  if (!thread) {
+    throw new Error(
+      "Thread not found. Wrap your app with <Thread.Provider thread={thread}>",
+    );
+  }
+  return thread;
 }
 
-export function Title({ className }: { className?: string }) {
-	const thread = useThread();
-	if (!thread) return null;
-	return <span className={className}>{thread.title}</span>;
+/**
+ * Thread.Provider does "use client" also hydrates on server
+ *
+ */
+export function Provider(props: React.PropsWithChildren<{ thread: Thread }>) {
+  return (
+    <ThreadCtx.Provider value={props.thread}>
+      {props.children}
+    </ThreadCtx.Provider>
+  );
 }
-export function Body({ className }: { className?: string }) {
-	const thread = useThread();
-	if (!thread) return null;
-	return <div className={className}>{thread.body}</div>;
-}
-export function CreatedAt({ className }: { className?: string }) {
-	const thread = useThread();
-	if (!thread) return null;
-	return (
-		<time dateTime={thread.createdAt} className={className}>
-			{thread.createdAt}
-		</time>
-	);
-}
-export function UpdatedAt({ className }: { className?: string }) {
-	const thread = useThread();
-	if (!thread) return null;
-	return (
-		<time dateTime={thread.updatedAt} className={className}>
-			{thread.updatedAt}
-		</time>
-	);
-}
+
+export { Title, Body };
