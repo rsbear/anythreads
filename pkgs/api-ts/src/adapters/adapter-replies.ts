@@ -1,11 +1,22 @@
+import type { ReadContext, WriteContext } from "../common/context.ts";
 import type { Msg } from "../common/msg.ts";
 
 export interface RepliesDataAdapter {
-	create(reply: ReplyCreate): Promise<Msg<Reply>>;
-	delete(id: string): Promise<Msg<"ok">>;
-	findOne(id: string): Promise<Msg<Reply>>;
-	findMany(opts?: RepliesFindManyOptions): Promise<Msg<Reply[]>>;
-	update(id: string, reply: ReplyUpdate): Promise<Msg<Reply>>;
+	// Write operations - support moderation + cache context
+	create(reply: ReplyCreate, ctx?: WriteContext): Promise<Msg<Reply>>;
+	update(
+		id: string,
+		reply: ReplyUpdate,
+		ctx?: WriteContext,
+	): Promise<Msg<Reply>>;
+	delete(id: string, ctx?: WriteContext): Promise<Msg<"ok">>;
+
+	// Read operations - support cache context only
+	findOne(id: string, ctx?: ReadContext): Promise<Msg<Reply>>;
+	findMany(
+		opts?: RepliesFindManyOptions,
+		ctx?: ReadContext,
+	): Promise<Msg<Reply[]>>;
 }
 
 export type Reply = {

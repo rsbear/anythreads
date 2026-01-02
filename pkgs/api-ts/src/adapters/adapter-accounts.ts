@@ -1,16 +1,35 @@
+import type { ReadContext, WriteContext } from "../common/context.ts";
 import type { Msg } from "../common/msg.ts";
 import type { Vote } from "./adapter-votes.ts";
 
 export interface AccountsDataAdapter {
-	create: (account: AccountCreateOrUpdate) => Promise<Msg<Account>>;
-	update: (id: string, account: AccountUpdate) => Promise<Msg<Account>>;
-	delete: (id: string) => Promise<Msg<Account>>;
-	ban: (id: string, until: Date | null) => Promise<Msg<Account>>;
-	unban: (id: string) => Promise<Msg<Account>>;
-	findOne: (id: string) => Promise<Msg<Account>>;
-	findMany: (opts: AccountsFindManyOptions) => Promise<Msg<Account[]>>;
+	// Write operations - support moderation + cache context
+	create: (
+		account: AccountCreateOrUpdate,
+		ctx?: WriteContext,
+	) => Promise<Msg<Account>>;
+	update: (
+		id: string,
+		account: AccountUpdate,
+		ctx?: WriteContext,
+	) => Promise<Msg<Account>>;
+	delete: (id: string, ctx?: WriteContext) => Promise<Msg<Account>>;
+	ban: (
+		id: string,
+		until: Date | null,
+		ctx?: WriteContext,
+	) => Promise<Msg<Account>>;
+	unban: (id: string, ctx?: WriteContext) => Promise<Msg<Account>>;
+
+	// Read operations - support cache context only
+	findOne: (id: string, ctx?: ReadContext) => Promise<Msg<Account>>;
+	findMany: (
+		opts: AccountsFindManyOptions,
+		ctx?: ReadContext,
+	) => Promise<Msg<Account[]>>;
 	personalizedThread: (
 		opts: PersonalizedThreadInput,
+		ctx?: ReadContext,
 	) => Promise<Msg<PersonalizedThread>>;
 }
 

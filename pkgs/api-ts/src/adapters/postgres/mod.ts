@@ -4,7 +4,10 @@ import { PostgresRepliesAdapter } from "./replies";
 import { PostgresThreadsAdapter } from "./threads";
 import { PostgresVotesAdapter } from "./votes";
 
-export function createPostgresAdapter(db: any): Anythreads {
+/**
+ * Create an Anythreads adapter using PostgreSQL.
+ */
+export function postgresAdapter(db: any): Anythreads {
 	return {
 		accounts: new PostgresAccountsAdapter(db),
 		threads: new PostgresThreadsAdapter(db),
@@ -12,3 +15,6 @@ export function createPostgresAdapter(db: any): Anythreads {
 		votes: new PostgresVotesAdapter(db),
 	};
 }
+
+/** @deprecated Use `postgresAdapter` instead */
+export const createPostgresAdapter = postgresAdapter;

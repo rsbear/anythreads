@@ -1,16 +1,30 @@
+import type { ReadContext, WriteContext } from "../common/context.ts";
 import type { Msg } from "../common/msg.ts";
 
 export interface VotesDataAdapter {
-	create(opts: {
-		accountId: string;
-		threadId: string;
-		replyId?: string | null;
-		direction: "up" | "down";
-	}): Promise<Msg<Vote>>;
-	update(voteId: string, direction: "up" | "down"): Promise<Msg<Vote>>;
-	delete(id: string): Promise<Msg<"ok">>;
-	findOne(id: string): Promise<Msg<Vote>>;
-	findMany(opts?: VotesFindManyOptions): Promise<Msg<Vote[]>>;
+	// Write operations - support cache context (votes don't need moderation)
+	create(
+		opts: {
+			accountId: string;
+			threadId: string;
+			replyId?: string | null;
+			direction: "up" | "down";
+		},
+		ctx?: WriteContext,
+	): Promise<Msg<Vote>>;
+	update(
+		voteId: string,
+		direction: "up" | "down",
+		ctx?: WriteContext,
+	): Promise<Msg<Vote>>;
+	delete(id: string, ctx?: WriteContext): Promise<Msg<"ok">>;
+
+	// Read operations - support cache context only
+	findOne(id: string, ctx?: ReadContext): Promise<Msg<Vote>>;
+	findMany(
+		opts?: VotesFindManyOptions,
+		ctx?: ReadContext,
+	): Promise<Msg<Vote[]>>;
 }
 
 export type Vote = {

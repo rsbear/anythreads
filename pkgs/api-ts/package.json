@@ -51,10 +51,22 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.3.10",
 		"@libsql/client": "^0.15.15",
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"ai": "^4.0.0",
+		"zod": "^3.23.0"
 	},
 	"peerDependencies": {
-		"typescript": "^5"
+		"typescript": "^5",
+		"ai": "^4.0.0",
+		"zod": "^3.23.0"
+	},
+	"peerDependenciesMeta": {
+		"ai": {
+			"optional": true
+		},
+		"zod": {
+			"optional": true
+		}
 	},
 	"dependencies": {
 		"effect": "^3.19.13",

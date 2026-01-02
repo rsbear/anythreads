@@ -5,7 +5,10 @@ import { FetchRepliesAdapter } from "./replies.ts";
 import { FetchThreadsAdapter } from "./threads.ts";
 import { FetchVotesAdapter } from "./votes.ts";
 
-export function createFetchAdapter(config: FetchConfig): Anythreads {
+/**
+ * Create an Anythreads adapter using fetch (for client-side or remote API).
+ */
+export function fetchAdapter(config: FetchConfig): Anythreads {
 	return {
 		threads: new FetchThreadsAdapter(config),
 		accounts: new FetchAccountsAdapter(config),
@@ -13,3 +16,6 @@ export function createFetchAdapter(config: FetchConfig): Anythreads {
 		votes: new FetchVotesAdapter(config),
 	};
 }
+
+/** @deprecated Use `fetchAdapter` instead */
+export const createFetchAdapter = fetchAdapter;

@@ -3,7 +3,13 @@ import type { Client as LibSQLClient } from "@libsql/client";
 
 import type { Anythreads } from "./../mod.ts";
 
-import { createAnythreads } from "./../mod.ts";
+import {
+	bunSqliteAdapter,
+	createAnythreads,
+	fetchAdapter,
+	libsqlAdapter,
+	postgresAdapter,
+} from "./../mod.ts";
 
 interface SetupAnythreadsOptions {
 	bunSQLite?: Database;
@@ -43,7 +49,7 @@ export function setupAnythreads(
 
 	if (options.bunSQLite) {
 		const instanceResult = createAnythreads({
-			adapter: { bunSQLite: options.bunSQLite },
+			adapter: bunSqliteAdapter(options.bunSQLite),
 		});
 		return {
 			instance: instanceResult,
@@ -54,7 +60,7 @@ export function setupAnythreads(
 
 	if (options.libsql) {
 		const instanceResult = createAnythreads({
-			adapter: { libsql: options.libsql },
+			adapter: libsqlAdapter(options.libsql),
 		});
 		return {
 			instance: instanceResult,
@@ -65,7 +71,7 @@ export function setupAnythreads(
 
 	if (options.postgres) {
 		const instanceResult = createAnythreads({
-			adapter: { postgres: options.postgres },
+			adapter: postgresAdapter(options.postgres),
 		});
 		return {
 			instance: instanceResult,
@@ -76,7 +82,7 @@ export function setupAnythreads(
 
 	if (options.fetch) {
 		const instanceResult = createAnythreads({
-			adapter: { fetch: options.fetch },
+			adapter: fetchAdapter(options.fetch),
 		});
 		return {
 			instance: instanceResult,

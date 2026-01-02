@@ -1,51 +1,76 @@
-import type { Database } from "bun:sqlite";
-import type { Client as LibSQLClient } from "@libsql/client";
-import { createBunSQLiteAdapter } from "./adapters/bunsqlite/mod.ts";
-import { createFetchAdapter } from "./adapters/fetch/mod.ts";
-import { createLibSQLAdapter } from "./adapters/libsql/mod.ts";
 import type { Anythreads } from "./adapters/mod.ts";
-import { createPostgresAdapter } from "./adapters/postgres/mod.ts";
+import type { CacheConfig } from "./cache/types.ts";
+import { withCache } from "./cache/wrapper.ts";
+import type { ModerationConfig } from "./moderation/types.ts";
+import { withModeration } from "./moderation/wrapper.ts";
 
-export type AdapterConfig =
-	| { bunSQLite: Database }
-	| { libsql: LibSQLClient }
-	| { postgres: any }
-	| {
-			fetch: { url: string; credentials?: "include" | "omit" | "same-origin" };
-	  };
+export {
+	bunSqliteAdapter,
+	createBunSQLiteAdapter,
+} from "./adapters/bunsqlite/mod.ts";
+export { createFetchAdapter, fetchAdapter } from "./adapters/fetch/mod.ts";
+// Re-export adapter factories
+export { createLibSQLAdapter, libsqlAdapter } from "./adapters/libsql/mod.ts";
+// Re-export types
+export type { Anythreads } from "./adapters/mod.ts";
+export {
+	createPostgresAdapter,
+	postgresAdapter,
+} from "./adapters/postgres/mod.ts";
+// Re-export cache stores
+export { memoryCache } from "./cache/stores/memory.ts";
+export type { CacheConfig, CacheStore } from "./cache/types.ts";
+export type {
+	CacheContext,
+	ModerationContext,
+	ReadContext,
+	WriteContext,
+} from "./common/context.ts";
+export type { Msg, MsgMetadata } from "./common/msg.ts";
+export { err, isErr, isNone, isSome, none, some } from "./common/msg.ts";
+export type { ModerationConfig } from "./moderation/types.ts";
 
-export type CacheConfig = { redis: any } | { valkey: any };
-
-export type ModerationConfig = {
-	openai?: {
-		apiKey: string;
-		model?: string;
-		moderationPrompt?: string;
-	};
-};
-
+/**
+ * Options for creating an Anythreads instance.
+ */
 export interface CreateAnythreadsOptions {
-	adapter: AdapterConfig;
+	/** The database adapter (use a factory like libsqlAdapter, postgresAdapter, etc.) */
+	adapter: Anythreads;
+	/** AI moderation configuration (optional) */
+	moderation?: ModerationConfig;
+	/** Cache configuration (optional) */
+	cache?: CacheConfig;
 }
 
-export type { Anythreads } from "./adapters/mod.ts";
-
+/**
+ * Create an Anythreads instance with optional moderation and caching.
+ *
+ * @example
+ * ```typescript
+ * import { createAnythreads, libsqlAdapter, memoryCache } from "@anythreads/api";
+ * import { openai } from "@ai-sdk/openai";
+ *
+ * const api = createAnythreads({
+ *   adapter: libsqlAdapter(client),
+ *   moderation: {
+ *     provider: openai("gpt-4o-mini"),
+ *   },
+ *   cache: memoryCache({ ttl: 60_000 }),
+ * });
+ * ```
+ */
 export function createAnythreads(options: CreateAnythreadsOptions): Anythreads {
-	let baseAdapter: Anythreads;
+	let api = options.adapter;
 
-	if ("bunSQLite" in options.adapter) {
-		baseAdapter = createBunSQLiteAdapter(options.adapter.bunSQLite);
-	} else if ("libsql" in options.adapter) {
-		baseAdapter = createLibSQLAdapter(options.adapter.libsql);
-	} else if ("postgres" in options.adapter) {
-		baseAdapter = createPostgresAdapter(options.adapter.postgres);
-	} else if ("fetch" in options.adapter) {
-		baseAdapter = createFetchAdapter(options.adapter.fetch);
-	} else {
-		throw new Error(
-			"An adapter is required (bunSQLite, libsql, postgres, or fetch)",
-		);
+	// Apply decorators in order:
+	// 1. Moderation (innermost - runs first on writes)
+	// 2. Cache (outermost - checks cache before hitting moderation/db)
+	if (options.moderation) {
+		api = withModeration(api, options.moderation);
+	}
+	if (options.cache) {
+		api = withCache(api, options.cache);
 	}
 
-	return baseAdapter;
+	return api;
 }

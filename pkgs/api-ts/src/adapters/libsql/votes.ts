@@ -37,15 +37,16 @@ export class LibSQLVotesAdapter implements VotesDataAdapter {
 			const existingVote = existingVoteResult.rows[0];
 
 			if (existingVote) {
+				const existingId = existingVote.id as string;
 				const updatedAt = Date.now();
 				await this.client.execute({
 					sql: "UPDATE votes SET direction = ?, updated_at = ? WHERE id = ?",
-					args: [direction, updatedAt, existingVote.id],
+					args: [direction, updatedAt, existingId],
 				});
 
 				const result = await this.client.execute({
 					sql: "SELECT * FROM votes WHERE id = ?",
-					args: [existingVote.id],
+					args: [existingId],
 				});
 				return some(mapDbToVote(result.rows[0]));
 			}

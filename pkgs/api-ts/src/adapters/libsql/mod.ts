@@ -5,7 +5,10 @@ import { LibSQLRepliesAdapter } from "./replies";
 import { LibSQLThreadsAdapter } from "./threads";
 import { LibSQLVotesAdapter } from "./votes";
 
-export function createLibSQLAdapter(client: Client): Anythreads {
+/**
+ * Create an Anythreads adapter using LibSQL/Turso.
+ */
+export function libsqlAdapter(client: Client): Anythreads {
 	return {
 		threads: new LibSQLThreadsAdapter(client),
 		accounts: new LibSQLAccountsAdapter(client),
@@ -13,3 +16,6 @@ export function createLibSQLAdapter(client: Client): Anythreads {
 		votes: new LibSQLVotesAdapter(client),
 	};
 }
+
+/** @deprecated Use `libsqlAdapter` instead */
+export const createLibSQLAdapter = libsqlAdapter;
