@@ -1,4 +1,0 @@
----
-parent: 'React'
-title: 'RSC'
----

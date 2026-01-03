@@ -3,60 +3,117 @@ parent: 'Data Functions'
 title: 'Accounts'
 ---
 
-# @anythreads/api
+# Accounts
 
-## Prerequisites
-1. You have installed `@anythreads/api`
-2. You have created an instance of Anythreads using your adapter of choice, e.g.:
-```ts 
-import { createAnythreads } from "@anythreads/api";
-import { Database } from "bun-sqlite";
-const db = new Database("file:test.db");
-const at = createAnythreads({ bunSQLite: db })
-```
+## create
 
-## Usage
+Create a new account.
 
-### Create an account
 ```ts
-const createAccount = await at.accounts.create({ ...})
-if (createAccount.isErr) return createAccount.err
+const result = await at.accounts.create({
+  username: "alice",
+  email: "alice@example.com",
+  avatar: "https://example.com/avatar.png",
+  upstreamId: "firebase-uid-123",  // optional external ID
+  badge: "moderator",               // optional badge
+  extras: { bio: "Hello!" },        // optional metadata
+});
+
+if (isErr(result)) return result.err;
+const account = result.data;
 ```
 
-### Find an account
+## update
+
+Update an existing account.
+
 ```ts
-const account = await at.accounts.findOne(createAccount.data.id)
-if (account.isErr) return account.err
+const result = await at.accounts.update(accountId, {
+  username: "alice_updated",
+  avatar: "https://example.com/new-avatar.png",
+});
 ```
 
-### Find all accounts
+## delete
+
+Soft delete an account.
+
 ```ts
-const accounts = await at.accounts.findAll()
-if (accounts.isErr) return accounts.err
+const result = await at.accounts.delete(accountId);
 ```
 
-### Update an account
+## ban / unban
+
+Ban or unban an account.
+
 ```ts
-const updateAccount = await at.accounts.update(account.data.id, { ...})
-if (updateAccount.isErr) return updateAccount.err
+// Ban until specific date
+const result = await at.accounts.ban(accountId, new Date("2026-12-31"));
+
+// Ban permanently
+const result = await at.accounts.ban(accountId, null);
+
+// Unban
+const result = await at.accounts.unban(accountId);
 ```
 
-### Delete an account
+## findOne
+
+Find a single account by ID.
+
 ```ts
-const deleteAccount = await at.accounts.delete(account.data.id)
-if (deleteAccount.isErr) return deleteAccount.err
+const result = await at.accounts.findOne(accountId);
+if (isErr(result)) return result.err;
+const account = result.data;
 ```
 
-### Delete all accounts
+## findMany
+
+Find multiple accounts with filtering, ordering, and pagination.
+
 ```ts
-const deleteAllAccounts = await at.accounts.deleteAll()
-if (deleteAllAccounts.isErr) return deleteAllAccounts.err
+const result = await at.accounts.findMany({
+  where: {
+    upstreamId: "firebase-uid-123",
+  },
+  order: {
+    createdAt: "desc",
+  },
+  limit: 20,
+  offset: 0,
+});
+
+if (isErr(result)) return result.err;
+const accounts = result.data;
 ```
 
-### Find all accounts with a specific property
+## personalizedThread
+
+Get a thread with user-specific vote information.
+
 ```ts
-const accounts = await at.accounts.findAll({ property: "value" })
-if (accounts.isErr) return accounts.err
+const result = await at.accounts.personalizedThread({
+  accountId: "account-123",
+  threadId: "thread-456",
+});
 ```
 
+## Types
+
+```ts
+type Account = {
+  id: string
+  upstreamId: string | null
+  username: string
+  email: string | null
+  avatar: string | null
+  badge: string | null
+  banned: boolean
+  bannedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+  extras: Record<string, any>
+}
+```
 
