@@ -1,11 +1,11 @@
 ---
-import { createLeftNavJson } from './../create-left-nav-json';
-import Html from '../layouts/Html.astro';
-import DocsLayout from '../layouts/DocsLayout.astro';
-import SideNav from '../components/SideNav.astro';
+import { createLeftNavJson } from "./../create-left-nav-json";
+import Html from "../layouts/Html.astro";
+import DocsLayout from "../layouts/DocsLayout.astro";
+import SideNav from "../components/SideNav.astro";
+import Footer from "../components/Footer.astro";
 
-
-const markdowns = Object.values(import.meta.glob('./md/**/*.md', { eager: true }));
+const markdowns = Object.values(import.meta.glob("./md/**/*.md", { eager: true }));
 const navLinks = createLeftNavJson(markdowns);
 
 const bullets = [
@@ -15,8 +15,7 @@ const bullets = [
   "Namespaced functions for consistent data dealing",
   "Unstyled React library with composition as a first principle",
   "Type safety for all your data",
-]
-
+];
 ---
 <Html title="Anythreads">
   <div class="flex flex-col min-h-dvh p-10">
@@ -38,4 +37,5 @@ const bullets = [
       </a>
     </div>
   </div>
+  <Footer />
 </Html>

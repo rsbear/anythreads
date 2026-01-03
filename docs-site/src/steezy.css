@@ -2,9 +2,12 @@
 @plugin '@egoist/tailwindcss-icons';
 
 @theme {
-  --color-backg: oklch(0.3732 0.0389 359.04);
-  --color-pane: oklch(0.3732 0.0389 359.04);
-  --color-txt: oklch(0.8846 0.0152 94.22);
+  /* --color-backg: oklch(0.3732 0.0389 359.04); */
+  /* --color-pane: oklch(0.3732 0.0389 359.04); */
+  /* --color-txt: oklch(0.8846 0.0152 94.22); */
+  --color-backg: rgb(26, 23, 16);
+  --color-pane: rgb(38, 35, 58);
+  --color-txt: rgb(234, 228, 226);
 
   --shadow-brutal: 4px 4px rgb(82, 82, 82);
 
@@ -14,9 +17,12 @@
 
 @layer base {
   :root {
-    --color-backg: oklch(0.2134 0.0255 291.13);
-    --color-pane: oklch(0.2708 0.0423 289.23);
-    --color-txt: oklch(0.8846 0.0152 94.22);
+    /* --color-backg: oklch(0.2134 0.0255 291.13); */
+    /* --color-pane: oklch(0.2708 0.0423 289.23); */
+    /* --color-txt: oklch(0.8846 0.0152 94.22); */
+    --color-backg: rgb(26, 23, 16);
+    --color-pane: rgb(38, 35, 58);
+    --color-txt: rgb(234, 228, 226);
   }
 
   .rose-pine {
@@ -24,9 +30,17 @@
     --color-pane: rgb(38, 35, 58);
     --color-txt: rgb(224, 222, 244);
   }
+
   .rose-pine-dawn {
     --color-backg: rgb(255, 250, 243);
+    --color-pane: rgb(242, 233, 222);
     --color-txt: rgb(87, 82, 121);
+  }
+
+  .vesper {
+    --color-backg: rgb(26, 23, 16);
+    --color-pane: rgb(38, 35, 58);
+    --color-txt: rgb(234, 228, 226);
   }
 
 
@@ -36,30 +50,43 @@ html {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 
+
 @scope(.markdowns) {
+  h1, h2, h3 {
+    font-family: "Google Sans Code", monospace;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
   h1 {
-    font-size: 2.75rem;
+    font-size: 2.25rem;
     /* font-weight: 600; */
-    font-family: "Caprasimo", serif;
-    font-style: light;
   }
 
   h2 {
     font-size: 1.5rem;
-    font-weight: 600;
     padding-top: 2rem;
+    padding-bottom: 0.5rem;
   }
 
   h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
     padding-top: 2.5rem;
     padding-bottom: 0.25rem;
+    font-size: 1.15rem;
+  }
+
+  a {
+    text-decoration: underline;
+    color: skyblue;
+  }
+
+  p strong {
+    opacity: 1;
   }
 
   p {
-    font-size: 1.125rem;
-    opacity: 0.85;
+    font-size: 1rem;
+    opacity: 0.75;
+    line-height: 1.5;
   }
 
   pre {
@@ -72,10 +99,44 @@ html {
     background-color: var(--color-pane);
     opacity: 0.2;
   }
+
+  pre {
+    background-color: rgb(36, 33, 26) !important;
+    box-shadow: 4px 4px 0px rgba(20, 17, 11, 1);
+    border: 1px solid rgb(52, 49, 43);
+    margin: 1rem 0;
+  }
+
+  p code {
+    background-color: rgb(36, 33, 26) !important;
+    border: 1px solid rgb(52, 49, 43);
+    font-size: 1rem;
+    padding: 0.1rem 0.2rem;
+  }
 }
 
 .caprasimo-regular {
   font-family: "Caprasimo", serif;
   font-weight: 400;
   font-style: normal;
+}
+
+.google-sans-code {
+  font-family: "Google Sans Code", monospace;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgb(36, 33, 26);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(52, 49, 43);
+  border-radius: 20px;
+  border: 3px solid rgb(36, 33, 26);
 }

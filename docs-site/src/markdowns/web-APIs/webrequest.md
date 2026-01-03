@@ -7,40 +7,32 @@ title: 'Webrequest'
 
 Drop your anythreads instance into any JS/TS web standards based framework and get a full rest api. Works with [Hono](https://hono.dev), Nitro, Oak, and more.
 
+<br />
+
 _**P.S.** Don't forget to get your tables setup - [CLI]("/docs/cli")_
 
 ### If you haven't already, install via
-::: code-group
-
-```sh [npm]
-npm i @anythreads/api
-```
-
-```sh [pnpm]
-pnpm add @anythreads/api
-```
 
 ```sh [bun]
 bun add @anythreads/api
 ```
 
-```sh [deno]
-deno add npm:@anythreads/api
-```
-
-:::
 
 ## Usage
-```ts
-// server/index.ts
+**Web Standards API** - Stand up a server with a REST API. It's build off of Web Standard request/response. Read more here: [Web APIs](/md/web-APIs/webrequest)
+```ts 
+import { at } from './anythreads.ts'
+import { webrequest } from "@anythreads/api/webrequest"
+
+// with Hono
 import { Hono } from 'hono'
-import { createAnythreads } from '@anythreads/api'
-import { webrequest } from '@anythreads/api/webrequest'
-
-const anythreads = createAnythreads(opts)
-
 const app = new Hono()
-app.all('/anythreads/*', (c) => webrequest(c, anythreads))
+app.all("/anythreads", (c) => webrequest(c.req, at))
+
+// Waku API route (/src/pages/api/[...anythreads].ts)
+export default async function handler(req: Request): Promise<Response> {
+  return await webrequests(req, at);
+}
 ```
 
 ### Endpoints

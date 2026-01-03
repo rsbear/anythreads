@@ -8,25 +8,10 @@ title: 'CSR'
 A React library for composing threads, comments, and votes into your apps user interface.
 
 ### If you haven't already, install via
-::: code-group
 
 ```sh [bun]
 bun add @anythreads/react
 ```
-
-```sh [deno]
-deno add npm:@anythreads/react
-```
-
-```sh [pnpm]
-pnpm add @anythreads/react
-```
-
-```sh [npm]
-npm i @anythreads/react
-```
-
-:::
 
 ### Composable client components (incomplete)
 

@@ -3,96 +3,33 @@ parent: 'Hello'
 title: 'CLI'
 ---
 
+
 # @anythreads/cli
 
 A really simple CLI for setting up your database tables, indexes, and seeding data.
 
 ### Read the `--help` menu
-::: code-group
-
-```sh [npm]
-npx @anythreads/cli --help
+```bash
+bunx @anythreads/api --help
 ```
-
-```sh [pnpm]
-pnpx @anythreads/api --help
-```
-
-```sh [bun]
-bunx @anythreads/cli --help
-```
-
-```sh [deno]
-deno run @anythreads/cli --help
-```
-
-:::
 
 
 ### Setup tables and indexes**
-::: code-group
-
-```sh [npm]
-npx @anythreads/cli setup all
+```bash
+bunx @anythreads/api setup all
 ```
-
-```sh [pnpm]
-pnpx @anythreads/cli setup all
-```
-
-```sh [bun]
-bunx @anythreads/cli setup all
-```
-
-```sh [deno]
-deno run @anythreads/cli setup all
-```
-
-:::
 
 
 ### Delete all rows in accounts, threads, comments, and votes
-::: code-group
-
-```sh [npm]
-npx @anythreads/cli empty all
+```bash
+bunx @anythreads/api empty all
 ```
-
-```sh [pnpm]
-pnpx @anythreads/cli empty all
-```
-
-```sh [bun]
-bunx @anythreads/cli empty all
-```
-
-```sh [deno]
-deno run @anythreads/cli empty all
-```
-
-:::
 
 
 ### Drop all tables (accounts, threads, comments, and votes)
-::: code-group
-
-```sh [npm]
-npx @anythreads/cli drop all
+```bash
+bunx @anythreads/api drop all
 ```
-
-```sh [pnpm]
-pnpx @anythreads/cli drop all
-```
-
-```sh [bun]
-bunx @anythreads/cli drop all
-```
-
-```sh [deno]
-deno run @anythreads/cli drop all
-```
-
-:::
 
 
 ### Under the hood

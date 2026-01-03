@@ -1,3 +1,3 @@
-import { atom } from 'nanostores';
+import { atom } from "nanostores";
 
-export const currentThemeAtom = atom("rose-pin-dawn");
+export const currentThemeAtom = atom("vesper");

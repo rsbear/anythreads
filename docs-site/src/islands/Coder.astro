@@ -1,0 +1,18 @@
+---
+import { codeToHtml } from "shiki";
+import { currentThemeAtom } from "../theme-atom";
+
+const $currentTheme = currentThemeAtom;
+
+const { code, lang } = Astro.props;
+
+$currentTheme.subscribe((theme) => {
+  console.log(theme);
+});
+const html = await codeToHtml(code, {
+  lang: lang,
+  theme: $currentTheme.get(), // [!code hl]
+});
+---
+
+<div set:html={html} />

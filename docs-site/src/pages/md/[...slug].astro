@@ -1,39 +1,39 @@
 ---
-import { createLeftNavJson } from '../../create-left-nav-json';
-import Html from '../../layouts/Html.astro';
-import SideNav from '../../components/SideNav.astro';
-import Breadcrumby from '../../islands/Breadcrumby.tsx';
-import ThemeDropdown from '../../islands/ThemeDropdown.tsx';
+import { createLeftNavJson } from "../../create-left-nav-json";
+import Html from "../../layouts/Html.astro";
+import SideNav from "../../components/SideNav.astro";
+import Breadcrumby from "../../islands/Breadcrumby.tsx";
+import ThemeDropdown from "../../islands/ThemeDropdown.tsx";
+import Footer from "../../components/Footer.astro";
 
-export const prerender = true
+export const prerender = true;
 
 export async function getStaticPaths() {
   const markdowns = Object.entries(
-    import.meta.glob('../../markdowns/**/*.mdx', { eager: true })
+    import.meta.glob("../../markdowns/**/*.md", { eager: true }),
   );
 
-  const pre = markdowns.map(([path, x]) => (x))
+  const pre = markdowns.map(([path, x]) => x);
   const navLinks = await createLeftNavJson(pre);
 
-  
   return markdowns.map(([path, x]) => {
     const frontmatter = x.frontmatter;
     const Content = x.Content;
-    
+
     return {
       params: {
-        slug: `${frontmatter.parent.toLowerCase()}/${frontmatter.title.toLowerCase()}`
+        slug: `${frontmatter.parent.toLowerCase()}/${frontmatter.title.toLowerCase()}`,
       },
       props: {
         frontmatter,
         Content,
-        navLinks
-      }
+        navLinks,
+      },
     };
   });
 }
 
-const { frontmatter, Content, navLinks  } = Astro.props;
+const { frontmatter, Content, navLinks } = Astro.props;
 ---
 
 <Html title="Anythreads">
@@ -46,12 +46,13 @@ const { frontmatter, Content, navLinks  } = Astro.props;
         </div>
       </div>
       <div class="markdowns pt-12">
-        <Content />
+        <Content  />
       </div>
     </div>
     <div class="py-4 flex relative top-0">
       <SideNav sideNavJson={navLinks} />
     </div>
   </div>
+  <Footer />
 </Html>
 
