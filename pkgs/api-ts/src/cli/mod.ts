@@ -1,12 +1,15 @@
 import type { Database } from "bun:sqlite";
 import type { Client as LibSQLClient } from "@libsql/client";
+import type { Kysely } from "kysely";
 
 import type { Anythreads } from "./../mod.ts";
+import type { Database as KyselyDatabase } from "../adapters/kysely/types.ts";
 
 import {
 	bunSqliteAdapter,
 	createAnythreads,
 	fetchAdapter,
+	kyselyAdapter,
 	libsqlAdapter,
 	postgresAdapter,
 } from "./../mod.ts";
@@ -15,6 +18,7 @@ interface SetupAnythreadsOptions {
 	bunSQLite?: Database;
 	libsql?: LibSQLClient;
 	postgres?: any;
+	kysely?: Kysely<KyselyDatabase>;
 	fetch?: {
 		url: string;
 		credentials?: "include" | "omit" | "same-origin";
@@ -23,8 +27,8 @@ interface SetupAnythreadsOptions {
 
 export interface AnythreadsCLI {
 	instance: Anythreads;
-	db: Database | LibSQLClient | any | null;
-	dbType: "bun_sqlite" | "libsql" | "postgres" | "fetch";
+	db: Database | LibSQLClient | Kysely<KyselyDatabase> | any | null;
+	dbType: "bun_sqlite" | "libsql" | "postgres" | "kysely" | "fetch";
 }
 
 export function setupAnythreads(
@@ -34,12 +38,13 @@ export function setupAnythreads(
 		options.bunSQLite,
 		options.libsql,
 		options.postgres,
+		options.kysely,
 		options.fetch,
 	].filter(Boolean).length;
 
 	if (adapterCount === 0) {
 		throw new Error(
-			"An adapter is required (bunSQLite, libsql, postgres, or fetch)",
+			"An adapter is required (bunSQLite, libsql, postgres, kysely, or fetch)",
 		);
 	}
 
@@ -77,6 +82,17 @@ export function setupAnythreads(
 			instance: instanceResult,
 			db: options.postgres,
 			dbType: "postgres" as const,
+		};
+	}
+
+	if (options.kysely) {
+		const instanceResult = createAnythreads({
+			adapter: kyselyAdapter(options.kysely),
+		});
+		return {
+			instance: instanceResult,
+			db: options.kysely,
+			dbType: "kysely" as const,
 		};
 	}
 

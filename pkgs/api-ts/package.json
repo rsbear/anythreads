@@ -51,17 +51,27 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.3.10",
 		"@libsql/client": "^0.15.15",
+		"@libsql/kysely-libsql": "^0.3.0",
 		"@types/bun": "latest",
 		"ai": "^4.0.0",
+		"kysely-bun-sqlite": "^0.3.2",
 		"zod": "^3.23.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5",
+		"@libsql/kysely-libsql": "^0.3.0",
 		"ai": "^4.0.0",
+		"kysely-bun-sqlite": "^0.3.2",
 		"zod": "^3.23.0"
 	},
 	"peerDependenciesMeta": {
+		"@libsql/kysely-libsql": {
+			"optional": true
+		},
 		"ai": {
+			"optional": true
+		},
+		"kysely-bun-sqlite": {
 			"optional": true
 		},
 		"zod": {
@@ -71,6 +81,7 @@
 	"dependencies": {
 		"effect": "^3.19.13",
 		"gunshi": "^0.27.3",
+		"kysely": "^0.28.9",
 		"nanoid": "^5.1.6"
 	}
 }

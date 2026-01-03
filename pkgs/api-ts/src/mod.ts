@@ -10,6 +10,12 @@ export {
 } from "./adapters/bunsqlite/mod.ts";
 export { createFetchAdapter, fetchAdapter } from "./adapters/fetch/mod.ts";
 // Re-export adapter factories
+export {
+	kyselyAdapter,
+	kyselyBunSqliteAdapter,
+	kyselyLibsqlAdapter,
+	kyselyPostgresAdapter,
+} from "./adapters/kysely/mod.ts";
 export { createLibSQLAdapter, libsqlAdapter } from "./adapters/libsql/mod.ts";
 // Re-export types
 export type { Anythreads } from "./adapters/mod.ts";
